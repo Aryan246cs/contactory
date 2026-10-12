@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "Contactory",
+    "slug": "contactory",
+    "version": "1.0.0",
+    "scheme": "contactory",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.contactory"
+    },
+    "android": {
+      "package": "com.example.contactory",
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Contactory uses the camera when you choose Scan Card."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Contactory lets you choose a card photo when you tap Gallery."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Contactory can add a contact to your phone when you choose Save to Phone Contacts."
+        }
+      ],
+      [
+        "expo-ocr-kit",
+        {
+          "cameraPermission": "Contactory uses the camera when you choose Scan Card."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d7b7f035-6520-4724-8bc7-2fed9911030a"
+      }
+    }
+  }
+}
