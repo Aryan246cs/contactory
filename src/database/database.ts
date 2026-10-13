@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import type { ThemeMode } from '@/theme/tokens';
 
 const dbPromise = SQLite.openDatabaseAsync('contactory.db');
 
@@ -54,5 +55,21 @@ export async function setOnboardingComplete(): Promise<void> {
   await db.runAsync(
     'INSERT INTO app_metadata (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
     'onboarding_complete', 'true'
+  );
+}
+
+export async function getThemePreference(): Promise<ThemeMode> {
+  const db = await dbPromise;
+  const row = await db.getFirstAsync<{ value: string }>(
+    'SELECT value FROM app_metadata WHERE key = ?', 'theme_preference'
+  );
+  return row?.value === 'dark' ? 'dark' : 'light';
+}
+
+export async function saveThemePreference(mode: ThemeMode): Promise<void> {
+  const db = await dbPromise;
+  await db.runAsync(
+    'INSERT INTO app_metadata (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    'theme_preference', mode
   );
 }

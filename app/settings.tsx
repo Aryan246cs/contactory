@@ -6,9 +6,12 @@ import * as Haptics from 'expo-haptics';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { exportContactsCsv } from '@/services/export/exportContacts';
 import { deleteAllLocalData } from '@/database/repositories/contactsRepository';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { radius, spacing, type ThemeColors, type ThemeMode } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 export default function SettingsScreen() {
+  const { colors, mode, setMode } = useTheme();
+  const styles = makeStyles(colors);
   const [exporting, setExporting] = useState(false);
   const exportData = async () => {
     setExporting(true);
@@ -29,7 +32,9 @@ export default function SettingsScreen() {
       <ScreenHeader title="Settings" />
       <View style={styles.brand}><Text style={styles.brandName}>Contactory</Text><Text style={styles.tagline}>Every card has a story. Remember yours.</Text></View>
       <Text style={styles.section}>APPEARANCE</Text>
-      <View style={styles.card}><Text style={styles.itemTitle}>Light appearance</Text><Text style={styles.itemSub}>Dark appearance and system theme support are planned for a follow-up polish pass.</Text></View>
+      <View style={styles.card}><Text style={styles.itemTitle}>Choose your look</Text><Text style={styles.itemSub}>Your choice is saved on this device.</Text><View style={styles.themeChoice}>
+        {(['light', 'dark'] as ThemeMode[]).map((choice) => <Pressable key={choice} accessibilityRole="button" accessibilityState={{ selected: mode === choice }} onPress={() => setMode(choice)} style={[styles.themeOption, mode === choice && styles.themeOptionSelected]}><Text style={[styles.themeOptionText, mode === choice && styles.themeOptionTextSelected]}>{choice === 'light' ? '☼  Light' : '☾  Dark'}</Text></Pressable>)}
+      </View></View>
       <Text style={styles.section}>PERMISSIONS</Text>
       <Pressable onPress={openSettings} style={styles.row}><View><Text style={styles.itemTitle}>Camera</Text><Text style={styles.itemSub}>Requested when you choose Scan Card.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <Pressable onPress={openSettings} style={styles.row}><View><Text style={styles.itemTitle}>Phone Contacts</Text><Text style={styles.itemSub}>Requested only when you save to phone contacts.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
@@ -43,4 +48,4 @@ export default function SettingsScreen() {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.canvas }, content: { paddingHorizontal: spacing.xl, paddingBottom: 35 }, brand: { marginTop: 8, marginBottom: 18 }, brandName: { color: colors.ink, fontSize: 29, letterSpacing: -1, fontWeight: '700' }, tagline: { color: colors.inkSoft, fontSize: 13, marginTop: 4 }, section: { color: colors.accent, fontSize: 9, letterSpacing: 1.5, fontWeight: '800', marginTop: 22, marginBottom: 8 }, card: { padding: 15, backgroundColor: colors.paper, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border }, row: { minHeight: 64, paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.paper, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, marginBottom: 7 }, itemTitle: { color: colors.ink, fontSize: 13, fontWeight: '700' }, itemSub: { color: colors.inkSoft, fontSize: 10, lineHeight: 15, marginTop: 4, maxWidth: 275 }, chevron: { color: colors.muted, fontSize: 20, marginLeft: 8 }, deleteRow: { borderColor: '#E8D6D1' }, deleteTitle: { color: colors.destructive, fontSize: 13, fontWeight: '700' }, about: { alignItems: 'center', paddingTop: 26 }, version: { color: colors.inkSoft, fontSize: 11, fontWeight: '700' }, aboutSub: { color: colors.muted, fontSize: 10, marginTop: 5 } });
+const makeStyles = (colors: ThemeColors) => StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.canvas }, content: { paddingHorizontal: spacing.xl, paddingBottom: 35 }, brand: { marginTop: 8, marginBottom: 18 }, brandName: { color: colors.ink, fontSize: 29, letterSpacing: -1, fontWeight: '700' }, tagline: { color: colors.inkSoft, fontSize: 13, marginTop: 4 }, section: { color: colors.accent, fontSize: 9, letterSpacing: 1.5, fontWeight: '800', marginTop: 22, marginBottom: 8 }, card: { padding: 15, backgroundColor: colors.paper, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, elevation: 2, shadowColor: colors.shadow, shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }, themeChoice: { flexDirection: 'row', gap: 8, marginTop: 14, padding: 4, borderRadius: radius.pill, backgroundColor: colors.artboard }, themeOption: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill }, themeOptionSelected: { backgroundColor: colors.accentFill }, themeOptionText: { color: colors.inkSoft, fontSize: 12, fontWeight: '700' }, themeOptionTextSelected: { color: colors.onAccent }, row: { minHeight: 64, paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.paper, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, marginBottom: 7 }, itemTitle: { color: colors.ink, fontSize: 13, fontWeight: '700' }, itemSub: { color: colors.inkSoft, fontSize: 10, lineHeight: 15, marginTop: 4, maxWidth: 275 }, chevron: { color: colors.muted, fontSize: 20, marginLeft: 8 }, deleteRow: { borderColor: colors.overlay }, deleteTitle: { color: colors.destructive, fontSize: 13, fontWeight: '700' }, about: { alignItems: 'center', paddingTop: 26 }, version: { color: colors.inkSoft, fontSize: 11, fontWeight: '700' }, aboutSub: { color: colors.muted, fontSize: 10, marginTop: 5 } });

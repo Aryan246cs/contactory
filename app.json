@@ -9,7 +9,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.contactory"
+      "bundleIdentifier": "com.example.contactory",
+      "accessesContactNotes": true
     },
     "android": {
       "package": "com.example.contactory",

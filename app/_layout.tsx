@@ -1,17 +1,18 @@
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { initializeDatabase } from '@/database/database';
-import { colors } from '@/theme/tokens';
+import { getThemePreference, initializeDatabase, saveThemePreference } from '@/database/database';
+import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [initialTheme, setInitialTheme] = useState<'light' | 'dark'>('light');
 
   const initialize = () => {
     setFailed(false);
-    initializeDatabase().then(() => setReady(true)).catch((error) => {
+    initializeDatabase().then(getThemePreference).then((mode) => { setInitialTheme(mode); setReady(true); }).catch((error) => {
       console.error('Contactory could not initialize its local database.', error);
       setFailed(true);
     });
@@ -20,6 +21,8 @@ export default function RootLayout() {
   useEffect(() => {
     initialize();
   }, []);
+
+  const { colors } = useTheme();
 
   if (!ready) {
     return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.canvas, padding: 32 }}>
@@ -33,8 +36,14 @@ export default function RootLayout() {
     </View>;
   }
 
+  return <ThemeProvider initialMode={initialTheme} onModeChange={saveThemePreference}><AppNavigator /></ThemeProvider>;
+}
+
+function AppNavigator() {
+  const { mode, colors } = useTheme();
+  const pathname = usePathname();
   return <>
-    <StatusBar style="dark" />
+    <StatusBar style={mode === 'dark' || pathname === '/scan' ? 'light' : 'dark'} />
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas }, animation: 'fade' }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />

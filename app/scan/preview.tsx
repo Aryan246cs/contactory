@@ -7,10 +7,13 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { ActionButton } from '@/components/ActionButton';
 import { recognizeTextFromImage } from '@/services/ocr/recognizeText';
 import { extractContactFields } from '@/services/ocr/contactParser';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { radius, spacing, type ThemeColors } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 import { emptyParsedContact } from '@/types/contact';
 
 export default function CardPreview() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const { uri, source } = useLocalSearchParams<{ uri?: string; source?: string }>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -47,4 +50,4 @@ export default function CardPreview() {
   </SafeAreaView>;
 }
 
-const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.canvas }, content: { flex: 1, paddingHorizontal: spacing.xl, paddingBottom: 18 }, lead: { color: colors.inkSoft, fontSize: 14, marginBottom: 14 }, image: { width: '100%', flex: 1, maxHeight: '56%', minHeight: 180, borderRadius: radius.md, backgroundColor: '#E6E3D9' }, broken: { flex: 1, minHeight: 180, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E6E3D9', borderRadius: radius.md }, tips: { flexDirection: 'row', gap: 10, marginTop: 17, alignItems: 'flex-start' }, tipMark: { color: colors.accent, fontSize: 16 }, tipText: { flex: 1, color: colors.inkSoft, fontSize: 12, lineHeight: 18 }, actions: { marginTop: 'auto', paddingTop: 18, gap: 12 }, retake: { height: 42, alignItems: 'center', justifyContent: 'center' }, retakeText: { color: colors.inkSoft, fontSize: 14, fontWeight: '600' }, processing: { alignItems: 'center', padding: 22, gap: 6 }, processTitle: { color: colors.ink, fontWeight: '700', fontSize: 15 }, processSub: { color: colors.inkSoft, fontSize: 12, textAlign: 'center' }, errorBox: { marginTop: 16, padding: 14, borderRadius: radius.sm, backgroundColor: '#F3E7E3' }, errorText: { color: colors.destructive, fontSize: 13, lineHeight: 19, textAlign: 'center' }, manualLink: { color: colors.accent, textAlign: 'center', marginTop: 11, fontSize: 13, fontWeight: '700' } });
+const makeStyles = (colors: ThemeColors) => StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.canvas }, content: { flex: 1, paddingHorizontal: spacing.xl, paddingBottom: 18 }, lead: { color: colors.inkSoft, fontSize: 14, marginBottom: 14 }, image: { width: '100%', flex: 1, maxHeight: '56%', minHeight: 180, borderRadius: radius.md, backgroundColor: colors.artboard }, broken: { flex: 1, minHeight: 180, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: colors.artboard, borderRadius: radius.md }, tips: { flexDirection: 'row', gap: 10, marginTop: 17, alignItems: 'flex-start' }, tipMark: { color: colors.accent, fontSize: 16 }, tipText: { flex: 1, color: colors.inkSoft, fontSize: 12, lineHeight: 18 }, actions: { marginTop: 'auto', paddingTop: 18, gap: 12 }, retake: { height: 42, alignItems: 'center', justifyContent: 'center' }, retakeText: { color: colors.inkSoft, fontSize: 14, fontWeight: '600' }, processing: { alignItems: 'center', padding: 22, gap: 6 }, processTitle: { color: colors.ink, fontWeight: '700', fontSize: 15 }, processSub: { color: colors.inkSoft, fontSize: 12, textAlign: 'center' }, errorBox: { marginTop: 16, padding: 14, borderRadius: radius.sm, backgroundColor: colors.overlay }, errorText: { color: colors.destructive, fontSize: 13, lineHeight: 19, textAlign: 'center' }, manualLink: { color: colors.accent, textAlign: 'center', marginTop: 11, fontSize: 13, fontWeight: '700' } });

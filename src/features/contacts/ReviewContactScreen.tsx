@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { Field } from '@/components/Field';
 import { ActionButton } from '@/components/ActionButton';
 import { saveContact, getContactById, findPotentialDuplicate, setNativeContactId } from '@/database/repositories/contactsRepository';
-import { saveToPhoneContacts } from '@/services/contacts/nativeContacts';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { ContactsPermissionError, saveToPhoneContacts } from '@/services/contacts/nativeContacts';
+import { radius, spacing, type ThemeColors } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 import { emptyParsedContact, type ContactDraft, type ParsedContact } from '@/types/contact';
 
-type ReviewParams = { draft?: string; editId?: string; manual?: string };
+type ReviewParams = { draft?: string; editId?: string; id?: string; manual?: string };
 const initialDraft = (contact: ParsedContact = emptyParsedContact()): ContactDraft => ({
   ...contact, phones: contact.phones.map((phone) => ({ ...phone })), note: '', meetingDate: '', location: '',
 });
@@ -22,24 +23,39 @@ function isValidIsoDate(value: string) {
 }
 
 export function ReviewContactScreen() {
+  const { colors } = useTheme();
+  const styles = makeStyles(colors);
   const params = useLocalSearchParams<ReviewParams>();
-  const editId = params.editId;
+  const editId = params.editId ?? params.id;
   const scanned = useMemo(() => { try { return params.draft ? JSON.parse(params.draft) as ParsedContact : emptyParsedContact(); } catch { return emptyParsedContact(); } }, [params.draft]);
   const [draft, setDraft] = useState<ContactDraft>(() => initialDraft(scanned));
-  const [saveNative, setSaveNative] = useState(false);
+  const [saveNative, setSaveNative] = useState(true);
+  const [nativeContactId, setNativeContactIdState] = useState<string | null>(null);
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editId));
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
-    if (editId) getContactById(editId).then((record) => {
-      if (active && record) setDraft({
-        fullName: record.fullName, firstName: record.firstName, lastName: record.lastName, company: record.company,
-        jobTitle: record.jobTitle, email: record.email, website: record.website, address: record.address,
-        phones: record.phones.map((phone) => ({ value: phone.value, label: phone.label, selected: true })),
-        note: record.notes[0]?.content ?? '', meetingDate: record.notes[0]?.meetingDate ?? '',
-        location: record.notes[0]?.location ?? '',
-      });
-    }).catch(() => Alert.alert('Contact unavailable', 'This contact could not be loaded.'));
+    if (editId) {
+      setLoadingEdit(true);
+      getContactById(editId).then((record) => {
+        if (!active) return;
+        if (!record) {
+          Alert.alert('Contact unavailable', 'This contact could not be loaded.', [{ text: 'Go back', onPress: () => router.back() }]);
+          return;
+        }
+        setDraft({
+          fullName: record.fullName, firstName: record.firstName, lastName: record.lastName, company: record.company,
+          jobTitle: record.jobTitle, email: record.email, website: record.website, address: record.address,
+          phones: record.phones.map((phone) => ({ value: phone.value, label: phone.label, selected: true })),
+          note: record.notes[0]?.content ?? '', meetingDate: record.notes[0]?.meetingDate ?? '',
+          location: record.notes[0]?.location ?? '',
+        });
+        setNativeContactIdState(record.nativeContactId);
+      }).catch(() => {
+        if (active) Alert.alert('Contact unavailable', 'This contact could not be loaded.');
+      }).finally(() => { if (active) setLoadingEdit(false); });
+    }
     return () => { active = false; };
   }, [editId]);
 
@@ -74,14 +90,27 @@ export function ReviewContactScreen() {
       }
       const id = await saveContact(finalDraft, editId);
       if (saveNative) {
-        try { const nativeId = await saveToPhoneContacts(finalDraft); await setNativeContactId(id, nativeId); }
-        catch (error) { Alert.alert('Saved to Contactory', error instanceof Error ? error.message : 'Phone contact could not be created.', [{ text: 'Continue', onPress: () => router.replace({ pathname: '/contacts/[id]', params: { id, saved: '1' } }) }]); return; }
+        try { const nativeId = await saveToPhoneContacts(finalDraft, nativeContactId); await setNativeContactId(id, nativeId); }
+        catch (error) {
+          const details = { pathname: '/contacts/[id]' as const, params: { id, saved: '1' } };
+          if (error instanceof ContactsPermissionError) {
+            Alert.alert('Saved to Contactory', error.message, [
+              { text: 'Later', style: 'cancel', onPress: () => router.replace(details) },
+              { text: 'Open Settings', onPress: () => { router.replace(details); void Linking.openSettings().catch(() => Alert.alert('Settings unavailable', 'Open Contactory in your device settings to allow Contacts access.')); } },
+            ]);
+          } else {
+            Alert.alert('Saved to Contactory', error instanceof Error ? error.message : 'Phone contact could not be created.', [{ text: 'Continue', onPress: () => router.replace(details) }]);
+          }
+          return;
+        }
       }
       router.replace({ pathname: '/contacts/[id]', params: { id, saved: '1' } });
     } catch (error) {
       Alert.alert('Could not save contact', error instanceof Error ? error.message : 'Try again in a moment.');
     } finally { setBusy(false); }
   };
+
+  if (loadingEdit) return <Screen><ScreenHeader title="Edit Contact" /><ActivityIndicator color={colors.accent} style={{ marginTop: 32 }} /></Screen>;
 
   return <Screen scroll>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -108,11 +137,11 @@ export function ReviewContactScreen() {
         <Field label="Meeting date (optional)" value={draft.meetingDate ? draft.meetingDate.slice(0, 10) : ''} onChangeText={(v) => update('meetingDate', v)} placeholder="YYYY-MM-DD" />
         <Field label="Where you met (optional)" value={draft.location} onChangeText={(v) => update('location', v)} placeholder="Location" />
       </View>
-      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: saveNative }} onPress={() => setSaveNative(!saveNative)} style={styles.nativeRow}><View style={[styles.check, saveNative && styles.checked]}><Text style={styles.checkText}>{saveNative ? '✓' : ''}</Text></View><View style={{ flex: 1 }}><Text style={styles.nativeTitle}>Also save to phone Contacts</Text><Text style={styles.nativeSub}>Your note stays private in Contactory.</Text></View></Pressable>
-      <ActionButton title={busy ? 'Saving…' : editId ? 'Save Changes' : 'Save Contact'} disabled={busy} onPress={() => persist()} />
+      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: saveNative }} onPress={() => setSaveNative(!saveNative)} style={styles.nativeRow}><View style={[styles.check, saveNative && styles.checked]}><Text style={styles.checkText}>{saveNative ? '✓' : ''}</Text></View><View style={{ flex: 1 }}><Text style={styles.nativeTitle}>Also save to phone Contacts</Text><Text style={styles.nativeSub}>Your memory will be copied to its Notes field too.</Text></View></Pressable>
+      <ActionButton title={busy ? 'Saving…' : editId ? 'Save Changes' : 'Save Contact'} disabled={busy || loadingEdit} onPress={() => persist()} />
       <View style={{ height: 28 }} />
     </KeyboardAvoidingView>
   </Screen>;
 }
 
-const styles = StyleSheet.create({ intro: { color: colors.inkSoft, fontSize: 14, lineHeight: 21, marginBottom: 17 }, section: { marginTop: 12, padding: 16, backgroundColor: colors.paper, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border }, sectionTitle: { color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1.4 }, sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, add: { color: colors.accent, fontSize: 12, fontWeight: '700' }, phoneCard: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 }, check: { width: 23, height: 23, borderRadius: 7, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }, checked: { backgroundColor: colors.accent, borderColor: colors.accent }, checkText: { color: colors.paper, fontSize: 14, fontWeight: '800' }, phoneFields: { flex: 1 }, remove: { color: colors.muted, fontSize: 24, padding: 4 }, hint: { color: colors.muted, fontSize: 11, marginTop: 12 }, memory: { padding: 18, backgroundColor: '#E9EDE4', borderRadius: radius.md, marginTop: 14 }, memoryEyebrow: { color: colors.accent, fontSize: 9, letterSpacing: 1.4, fontWeight: '800' }, memoryTitle: { color: colors.ink, fontSize: 18, fontWeight: '700', marginTop: 9 }, memoryHelp: { color: colors.inkSoft, fontSize: 12, lineHeight: 18, marginTop: 4 }, nativeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, marginVertical: 14, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, backgroundColor: colors.paper }, nativeTitle: { color: colors.ink, fontSize: 13, fontWeight: '700' }, nativeSub: { color: colors.inkSoft, fontSize: 11, marginTop: 3 }, });
+const makeStyles = (colors: ThemeColors) => StyleSheet.create({ intro: { color: colors.inkSoft, fontSize: 14, lineHeight: 21, marginBottom: 17 }, section: { marginTop: 12, padding: 16, backgroundColor: colors.paper, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, elevation: 2, shadowColor: colors.shadow, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } }, sectionTitle: { color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1.4 }, sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, add: { color: colors.accent, fontSize: 12, fontWeight: '700' }, phoneCard: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 }, check: { width: 23, height: 23, borderRadius: 7, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }, checked: { backgroundColor: colors.accentFill, borderColor: colors.accent }, checkText: { color: colors.onAccent, fontSize: 14, fontWeight: '800' }, phoneFields: { flex: 1 }, remove: { color: colors.muted, fontSize: 24, padding: 4 }, hint: { color: colors.muted, fontSize: 11, marginTop: 12 }, memory: { padding: 18, backgroundColor: colors.memory, borderRadius: radius.md, marginTop: 14, borderWidth: 1, borderColor: colors.border, elevation: 2, shadowColor: colors.shadow, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } }, memoryEyebrow: { color: colors.accent, fontSize: 9, letterSpacing: 1.4, fontWeight: '800' }, memoryTitle: { color: colors.ink, fontSize: 18, fontWeight: '700', marginTop: 9 }, memoryHelp: { color: colors.inkSoft, fontSize: 12, lineHeight: 18, marginTop: 4 }, nativeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 15, marginVertical: 14, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, backgroundColor: colors.paper }, nativeTitle: { color: colors.ink, fontSize: 13, fontWeight: '700' }, nativeSub: { color: colors.inkSoft, fontSize: 11, marginTop: 3 }, });
