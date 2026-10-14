@@ -30,6 +30,7 @@ export type ContactRecord = Omit<ParsedContact, 'phones'> & {
   nativeContactId: string | null;
   phones: Array<{ id: string; value: string; label: string; isPrimary: boolean }>;
   notes: Array<{ id: string; content: string; meetingDate: string | null; location: string | null; createdAt: string }>;
+  tags: Array<{ id: string; name: string; kind: string }>;
   createdAt: string;
   updatedAt: string;
 };

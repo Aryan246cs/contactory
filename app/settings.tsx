@@ -19,7 +19,7 @@ export default function SettingsScreen() {
     catch (error) { Alert.alert('Could not export contacts', error instanceof Error ? error.message : 'Try again in a moment.'); }
     finally { setExporting(false); }
   };
-  const deleteData = () => Alert.alert('Delete everything?', 'This permanently removes your Contactory contacts, notes, and stored card records from this device. This cannot be undone. Your phone Contacts will not be changed.', [
+  const deleteData = () => Alert.alert('Delete everything?', 'This permanently removes your Contactory contacts, notes, custom tags, and group assignments from this device. This cannot be undone. Your phone Contacts will not be changed.', [
     { text: 'Cancel', style: 'cancel' }, { text: 'Delete Everything', style: 'destructive', onPress: async () => {
       try { await deleteAllLocalData(); await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); Alert.alert('Local data deleted', 'Your phone Contacts were not changed.', [{ text: 'Done', onPress: () => router.replace('/') }]); }
       catch { Alert.alert('Could not delete data', 'Try again in a moment.'); }
@@ -39,6 +39,8 @@ export default function SettingsScreen() {
       <Pressable onPress={openSettings} style={styles.row}><View><Text style={styles.itemTitle}>Camera</Text><Text style={styles.itemSub}>Requested when you choose Scan Card.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <Pressable onPress={openSettings} style={styles.row}><View><Text style={styles.itemTitle}>Phone Contacts</Text><Text style={styles.itemSub}>Requested only when you save to phone contacts.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <Text style={styles.section}>YOUR DATA</Text>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/tags' as never)} style={styles.row}><View><Text style={styles.itemTitle}>Tags & groups</Text><Text style={styles.itemSub}>Create event, industry, priority, or custom groups.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/duplicates' as never)} style={styles.row}><View><Text style={styles.itemTitle}>Review duplicates</Text><Text style={styles.itemSub}>Find matching emails or phone numbers and combine entries.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={exportData} disabled={exporting} style={styles.row}><View><Text style={styles.itemTitle}>{exporting ? 'Preparing export…' : 'Export contacts as CSV'}</Text><Text style={styles.itemSub}>Create a file and choose where to share or save it.</Text></View><Text style={styles.chevron}>↗</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={deleteData} style={[styles.row, styles.deleteRow]}><View><Text style={styles.deleteTitle}>Delete all local data</Text><Text style={styles.itemSub}>Your phone Contacts are left untouched.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <Text style={styles.section}>PRIVACY & ABOUT</Text>

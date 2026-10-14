@@ -27,7 +27,7 @@ This plan groups the complete product brief into three deliverable modules.
 - Settings, dark mode, accessibility/performance polish, privacy and store documents.
 - Automated coverage, EAS development/preview/production validation, and real-device checklist.
 
-**Status:** Contact CRUD, local search, optional phone Contacts handoff, CSV export, privacy draft, store checklist, and real-device checklist are implemented. TypeScript and 11 unit tests pass. Dark appearance, broader accessibility/performance polish, Expo Doctor, native builds, and physical-device validation remain.
+**Status:** Contact CRUD, local search, optional phone Contacts handoff, CSV export, local suggested/custom tags and groups, duplicate review/merge, graphite and green theme polish, privacy draft, store checklist, deployment guide, and real-device checklist are implemented. TypeScript passes. App behavior, accessibility/performance, Expo Doctor, native builds, and physical-device validation remain for the release testing pass.
 
 ## Module 1 handoff
 

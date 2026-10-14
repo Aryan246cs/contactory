@@ -15,10 +15,10 @@ describe('ThemeProvider', () => {
   it('switches palettes and persists the selected mode', () => {
     const persist = jest.fn(async () => {});
     render(<ThemeProvider onModeChange={persist}><ThemeProbe /></ThemeProvider>);
-    expect(screen.getByText('#F6F5EF')).toBeTruthy();
+    expect(screen.getByText('#F3F4F2')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Dark' }));
     expect(screen.getByText('dark')).toBeTruthy();
-    expect(screen.getByText('#10130F')).toBeTruthy();
+    expect(screen.getByText('#090D0B')).toBeTruthy();
     expect(persist).toHaveBeenCalledWith('dark');
   });
 });

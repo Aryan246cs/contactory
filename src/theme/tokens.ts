@@ -1,21 +1,21 @@
 export type ThemeMode = 'light' | 'dark';
 
 export const lightColors = {
-  canvas: '#F6F5EF', paper: '#FFFDF8', artboard: '#ECEBE3',
-  ink: '#20231E', inkSoft: '#65685F', muted: '#92948B', border: '#E5E4DB',
-  accent: '#526A50', accentFill: '#526A50', accentSoft: '#E5EBDD', accentBright: '#C3D4A8', onAccent: '#FFFFFF',
+  canvas: '#F3F4F2', paper: '#FFFFFF', artboard: '#E8ECE8',
+  ink: '#111613', inkSoft: '#58635D', muted: '#88928C', border: '#DDE3DE',
+  accent: '#187A5B', accentFill: '#111613', accentSoft: '#E2F1E9', accentBright: '#9CE8C3', onAccent: '#FFFFFF',
   success: '#477653', warning: '#9B7334', destructive: '#A34B42',
-  overlay: '#F3E7E3', memory: '#E9EDE4', input: '#FFFDF8',
-  shadow: '#172017', cardGlow: '#FFFFFF',
+  overlay: '#F4E5E2', memory: '#EAF3EE', input: '#FFFFFF',
+  shadow: '#101A14', cardGlow: '#76F0BB',
 } as const;
 
 export const darkColors = {
-  canvas: '#10130F', paper: '#191E19', artboard: '#242A23',
-  ink: '#F2F3EC', inkSoft: '#B4B9AE', muted: '#858D81', border: '#30382F',
-  accent: '#A9C992', accentFill: '#496343', accentSoft: '#283526', accentBright: '#C5DDAA', onAccent: '#FFFFFF',
+  canvas: '#090D0B', paper: '#121A16', artboard: '#1B2721',
+  ink: '#F3F8F4', inkSoft: '#B0BEB6', muted: '#73837A', border: '#26362E',
+  accent: '#72E0AA', accentFill: '#1A7653', accentSoft: '#172F24', accentBright: '#9CE8C3', onAccent: '#07110B',
   success: '#8BC79A', warning: '#E1B970', destructive: '#E18E83',
-  overlay: '#382823', memory: '#202A20', input: '#171C17',
-  shadow: '#000000', cardGlow: '#D5E7C8',
+  overlay: '#34221F', memory: '#14231A', input: '#101713',
+  shadow: '#000000', cardGlow: '#7AF0B8',
 } as const;
 
 export type ThemeColors = { [K in keyof typeof lightColors]: string };

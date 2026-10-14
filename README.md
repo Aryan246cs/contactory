@@ -41,9 +41,11 @@ flowchart TD
 - Search by contact fields and memory text.
 - Optional save to the native phone Contacts app.
 - CSV export via the operating system share sheet; local-only delete confirmation.
+- Optional suggested and custom tags, with tappable groups from the home screen.
+- Duplicate review using matching email/phone values; merge keeps all notes, unique numbers, tags, and fills missing details into the selected record.
 - Draft privacy policy, store checklist, and device test checklist.
 
-Card images and raw OCR text are not retained after review. Personal notes are stored only in Contactory and are not copied to phone Contacts.
+Card images and raw OCR text are temporary and are not retained after review. There is no card-image history. Contacts, notes, and tags are stored in local SQLite on the device; there is no app server or cloud storage. If users choose “Also save to phone Contacts,” the selected details and memory note are copied to the device Contacts app and may sync through that account.
 
 ## Tech stack and structure
 
@@ -115,7 +117,7 @@ After installing the development build, start Metro with `npm run start:dev` and
 
 SQLite is the local source of truth. Contacts, phones, notes, native contact IDs, and minimal app metadata are stored on device. Foreign keys cascade when local contacts are deleted. No cloud service, login, analytics, advertising, or automatic upload is configured. SQLite encryption is not enabled or claimed.
 
-The privacy policy in `docs/PRIVACY_POLICY_DRAFT.md` should be reviewed against the final build and completed with publisher and jurisdiction details before release.
+The privacy policy in `docs/PRIVACY_POLICY_DRAFT.md` should be reviewed against the final build and completed with publisher and jurisdiction details before release. For first-time store publishing steps, see [the deployment and publishing guide](docs/DEPLOYMENT_AND_PUBLISHING.md).
 
 ## Validation and release
 

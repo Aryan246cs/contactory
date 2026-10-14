@@ -8,10 +8,10 @@ export default function PrivacyDraft() {
   const { colors } = useTheme();
   const styles = makeStyles(colors);
   return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.content}><ScreenHeader title="Privacy policy draft" />
-    <Text style={styles.date}>DRAFT · 12 OCTOBER 2026</Text>
+    <Text style={styles.date}>DRAFT · 13 OCTOBER 2026</Text>
     <Text style={styles.heading}>Your contacts stay yours.</Text>
     <Text style={styles.body}>Contactory is designed to store your network on your device. This draft reflects the current local-first implementation and must be reviewed before public release.</Text>
-    <Text style={styles.subhead}>Information you add</Text><Text style={styles.body}>Contact names, companies, job titles, phone numbers, email addresses, websites, addresses, and personal notes are stored in the Contactory app’s local SQLite database. Card images and raw OCR text are not retained after the review flow.</Text>
+    <Text style={styles.subhead}>Information you add</Text><Text style={styles.body}>Contact names, companies, job titles, phone numbers, email addresses, websites, addresses, personal notes, and tags are stored in the Contactory app’s local SQLite database. Card images and raw OCR text are temporary and are not retained after review. There is no card image history or Contactory cloud storage.</Text>
     <Text style={styles.subhead}>Scanning</Text><Text style={styles.body}>Card images are processed on the device by Apple Vision on iOS and Google ML Kit on Android. Contactory does not send card images or extracted contact information to a server for OCR.</Text>
     <Text style={styles.subhead}>Phone Contacts</Text><Text style={styles.body}>If you leave “Also save to phone Contacts” selected, Contactory copies the contact details and memory note to the device Contacts system. The note may appear in the phone contact’s Notes field and can sync with that account, such as Google Contacts. This is a separate copy; Contactory also keeps the contact and note in its local database.</Text>
     <Text style={styles.subhead}>Sharing and export</Text><Text style={styles.body}>When you export a CSV, the operating system’s share sheet lets you choose where the file goes. Contactory does not upload the export.</Text>

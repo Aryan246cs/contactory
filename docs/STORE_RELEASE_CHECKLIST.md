@@ -23,3 +23,5 @@
 - [ ] Submit the production build and respond to App Review.
 
 Store approval, signing, and account access require publisher action and are not claimed by this project.
+
+For the full first-time walkthrough, account setup, EAS build commands, and backend/cost guidance, see [DEPLOYMENT_AND_PUBLISHING.md](DEPLOYMENT_AND_PUBLISHING.md).

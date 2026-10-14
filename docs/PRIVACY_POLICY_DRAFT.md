@@ -4,7 +4,7 @@
 
 ## Data stored in Contactory
 
-Contact names, company and job details, selected phone numbers, email addresses, websites, addresses, and optional meeting notes are stored in the app's local SQLite database on the device. The MVP does not enable SQLite encryption. Contact images and raw OCR text are not retained after the review flow.
+Contact names, company and job details, selected phone numbers, email addresses, websites, addresses, optional meeting notes, and tags are stored in the app's local SQLite database on the device. The MVP does not enable SQLite encryption. Card images and raw OCR text are temporary inputs and are not retained after the review flow. There is no card-image history or remote Contactory storage.
 
 ## Card scanning
 
@@ -24,7 +24,7 @@ This MVP has no login, cloud backup, analytics SDK, or advertising SDK configure
 
 ## Your choices
 
-You may edit and delete local Contactory records, export them, and choose whether to write selected contact details to your device Contacts. Local data deletion does not delete phone Contacts entries.
+You may edit and delete local Contactory records, export them, and choose whether to write selected contact details to your device Contacts. The delete-all action removes contacts, notes, custom tags, and group assignments from Contactory. Local data deletion does not delete phone Contacts entries.
 
 ## Complete before release
 

@@ -29,16 +29,29 @@ export async function initializeDatabase() {
       content TEXT NOT NULL, meeting_date TEXT, location TEXT,
       created_at TEXT NOT NULL, updated_at TEXT NOT NULL
     );
-    CREATE TABLE IF NOT EXISTS scanned_cards (
-      id TEXT PRIMARY KEY NOT NULL,
-      contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
-      image_path TEXT, raw_ocr_text TEXT, created_at TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS tags (
+      id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      kind TEXT NOT NULL DEFAULT 'custom', created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS contact_tags (
+      contact_id TEXT NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
+      tag_id TEXT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL, PRIMARY KEY(contact_id, tag_id)
+    );
+    INSERT OR IGNORE INTO tags (id, name, kind, created_at) VALUES
+      ('tag-followup', 'Follow-up', 'suggested', CURRENT_TIMESTAMP),
+      ('tag-event', 'Event', 'suggested', CURRENT_TIMESTAMP),
+      ('tag-industry', 'Industry', 'suggested', CURRENT_TIMESTAMP),
+      ('tag-priority', 'Priority', 'suggested', CURRENT_TIMESTAMP),
+      ('tag-personal', 'Personal', 'suggested', CURRENT_TIMESTAMP);
     CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(full_name);
     CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company);
     CREATE INDEX IF NOT EXISTS idx_contact_phones_contact ON contact_phones(contact_id);
     CREATE INDEX IF NOT EXISTS idx_contact_notes_contact ON contact_notes(contact_id);
+    CREATE INDEX IF NOT EXISTS idx_contact_tags_tag ON contact_tags(tag_id);
   `));
+  // Earlier prototypes reserved a table for card files, but Contactory never retains those files.
+  await db.execAsync('DROP TABLE IF EXISTS scanned_cards;');
   return db;
 }
 

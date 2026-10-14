@@ -30,6 +30,8 @@ Main routes:
 | `app/scan/preview.tsx` | Photo preview and OCR handoff. |
 | `app/scan/review.tsx` | Route wrapper for the shared contact review form. |
 | `app/contacts/` | Contact list, add, edit, and detail views. |
+| `app/tags.tsx`, `app/groups/[id].tsx` | Create and assign optional local tags; open contact groups. |
+| `app/duplicates.tsx` | Review email/phone matches and merge into the selected surviving contact. |
 | `app/search.tsx` | Local search across contact and memory fields. |
 | `app/settings.tsx` | Appearance selection, data export/deletion, and device settings links. |
 | `app/privacy.tsx` | In-app privacy policy draft. |
@@ -77,7 +79,7 @@ SQLite (`expo-sqlite`) is the source of truth. `src/database/database.ts` opens 
 erDiagram
   CONTACTS ||--o{ CONTACT_PHONES : has
   CONTACTS ||--o{ CONTACT_NOTES : remembers
-  CONTACTS ||--o{ SCANNED_CARDS : source
+  CONTACTS }o--o{ TAGS : organized_by
 
   CONTACTS {
     text id PK
@@ -110,22 +112,17 @@ erDiagram
     text created_at
     text updated_at
   }
-  SCANNED_CARDS {
-    text id PK
-    text contact_id FK
-    text image_path
-    text raw_ocr_text
-    text created_at
-  }
+  TAGS { text id PK; text name; text kind }
+  CONTACT_TAGS { text contact_id FK; text tag_id FK; text created_at }
   APP_METADATA {
     text key PK
     text value
   }
 ```
 
-`contact_phones.contact_id`, `contact_notes.contact_id`, and `scanned_cards.contact_id` reference `contacts.id` with `ON DELETE CASCADE`. `app_metadata` has independent key/value rows, currently including onboarding completion and appearance preference. Indexes cover contact names, companies, and child-to-contact lookups.
+`contact_phones.contact_id`, `contact_notes.contact_id`, and `contact_tags.contact_id` reference `contacts.id` with `ON DELETE CASCADE`. `contact_tags.tag_id` references `tags.id`. Suggested tags are seeded locally but unassigned. `app_metadata` has independent key/value rows, currently including onboarding completion and appearance preference. Indexes cover contact names, companies, and child-to-contact lookups.
 
-The schema supports multiple notes and scanned-card records, but the current review workflow saves one memory note per contact and does not persist card images or raw OCR. The `native_contact_id` column is an optional identifier returned by the device Contacts system; it is not a foreign key into SQLite. Deleting a Contactory contact does not delete the native phone contact.
+The review workflow saves an optional memory note per contact. Card images and OCR output exist only as transient scan inputs; there is no scan-history table or file retention. Duplicate review uses email and phone matches; a merge transaction moves all notes, unique numbers, and tag memberships into the selected surviving contact, fills its missing fields, and deletes the duplicate. The `native_contact_id` column is an optional identifier returned by the device Contacts system; it is not a foreign key into SQLite. Deleting a Contactory contact does not delete the native phone contact.
 
 Contact, selected phone numbers, and the current note are written inside a SQLite transaction. Search uses local parameterized `LIKE` queries across identity, phone, and note fields. Export reads the repository's contact records and writes a temporary CSV for the system share sheet.
 
