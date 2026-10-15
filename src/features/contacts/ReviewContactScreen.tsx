@@ -85,7 +85,7 @@ export function ReviewContactScreen() {
         const duplicate = await findPotentialDuplicate(finalDraft.email, finalDraft.phones.filter((phone) => phone.selected).map((phone) => phone.value));
         if (duplicate) {
           setBusy(false);
-          Alert.alert('This person may already be in Contactory', `${duplicate.fullName || duplicate.company}${duplicate.company ? `\n${duplicate.company}` : ''}${duplicate.phones[0] ? `\n${duplicate.phones[0].value}` : ''}`, [
+          Alert.alert('This person may already be in Vemori', `${duplicate.fullName || duplicate.company}${duplicate.company ? `\n${duplicate.company}` : ''}${duplicate.phones[0] ? `\n${duplicate.phones[0].value}` : ''}`, [
             { text: 'View existing', onPress: () => router.push({ pathname: '/contacts/[id]', params: { id: duplicate.id } }) },
             { text: 'Save anyway', onPress: () => { void persist(true); } },
             { text: 'Cancel', style: 'cancel' },
@@ -100,12 +100,12 @@ export function ReviewContactScreen() {
         catch (error) {
           const details = { pathname: '/contacts/[id]' as const, params: { id, saved: '1' } };
           if (error instanceof ContactsPermissionError) {
-            Alert.alert('Saved to Contactory', error.message, [
+            Alert.alert('Saved to Vemori', error.message, [
               { text: 'Later', style: 'cancel', onPress: () => router.replace(details) },
-              { text: 'Open Settings', onPress: () => { router.replace(details); void Linking.openSettings().catch(() => Alert.alert('Settings unavailable', 'Open Contactory in your device settings to allow Contacts access.')); } },
+              { text: 'Open Settings', onPress: () => { router.replace(details); void Linking.openSettings().catch(() => Alert.alert('Settings unavailable', 'Open Vemori in your device settings to allow Contacts access.')); } },
             ]);
           } else {
-            Alert.alert('Saved to Contactory', error instanceof Error ? error.message : 'Phone contact could not be created.', [{ text: 'Continue', onPress: () => router.replace(details) }]);
+            Alert.alert('Saved to Vemori', error instanceof Error ? error.message : 'Phone contact could not be created.', [{ text: 'Continue', onPress: () => router.replace(details) }]);
           }
           return;
         }

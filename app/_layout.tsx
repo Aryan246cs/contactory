@@ -13,7 +13,7 @@ export default function RootLayout() {
   const initialize = () => {
     setFailed(false);
     initializeDatabase().then(getThemePreference).then((mode) => { setInitialTheme(mode); setReady(true); }).catch((error) => {
-      console.error('Contactory could not initialize its local database.', error);
+      console.error('Vemori could not initialize its local database.', error);
       setFailed(true);
     });
   };
@@ -28,7 +28,7 @@ export default function RootLayout() {
     return <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.canvas, padding: 32 }}>
       {failed ? <>
         <Text style={{ color: colors.ink, fontSize: 21, fontWeight: '700', textAlign: 'center' }}>Your local library couldn’t open.</Text>
-        <Text style={{ color: colors.inkSoft, fontSize: 14, textAlign: 'center', marginTop: 10, lineHeight: 21 }}>Your contacts stay on this device. Try opening Contactory again.</Text>
+        <Text style={{ color: colors.inkSoft, fontSize: 14, textAlign: 'center', marginTop: 10, lineHeight: 21 }}>Your contacts stay on this device. Try opening Vemori again.</Text>
         <Pressable accessibilityRole="button" onPress={initialize} style={{ backgroundColor: colors.ink, paddingHorizontal: 24, paddingVertical: 14, borderRadius: 30, marginTop: 22 }}>
           <Text style={{ color: colors.paper, fontWeight: '700' }}>Try again</Text>
         </Pressable>

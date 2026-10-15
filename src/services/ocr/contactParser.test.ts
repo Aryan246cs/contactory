@@ -22,11 +22,11 @@ describe('contact card parser', () => {
     expect(normalizePhoneNumber('+91 (98765) 43210')).toBe('+919876543210');
     expect(extractPhoneNumbers('+1 415-555-0134\n+1 (415) 555-0134')).toHaveLength(1);
     expect(extractEmails('a@sample.com\na@sample.com')).toEqual(['a@sample.com']);
-    expect(deduplicateValues(['ACME', 'Acme', 'Contactory'])).toEqual(['ACME', 'Contactory']);
+    expect(deduplicateValues(['ACME', 'Acme', 'Vemori'])).toEqual(['ACME', 'Vemori']);
   });
 
   it('handles website-only and sparse cards without fabricating missing values', () => {
-    expect(extractWebsite('https://contactory.app/about')).toBe('https://contactory.app/about');
+    expect(extractWebsite('https://example.com/about')).toBe('https://example.com/about');
     expect(extractContactFields('')).toMatchObject({ fullName: '', company: '', email: '', phones: [] });
     expect(extractContactFields('Contact\n+1 202 555 0134').fullName).toBe('');
   });

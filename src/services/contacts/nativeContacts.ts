@@ -4,7 +4,7 @@ import type { ContactDraft } from '@/types/contact';
 
 export class ContactsPermissionError extends Error {
   constructor(readonly canAskAgain: boolean) {
-    super('Contactory needs permission to add this person to your phone Contacts. You can grant it in the permission prompt or in app settings.');
+    super('Vemori needs permission to add this person to your phone Contacts. You can grant it in the permission prompt or in app settings.');
     this.name = 'ContactsPermissionError';
   }
 }
@@ -42,8 +42,8 @@ export async function saveToPhoneContacts(draft: ContactDraft, existingContactId
   } catch (error) {
     if (error instanceof ContactsPermissionError) throw error;
     const message = error instanceof Error ? error.message : '';
-    if (/permission|denied|unauthorized/i.test(message)) throw new Error('Contactory saved this record, but phone Contacts permission was not granted. You can allow it in device settings and try again.');
-    if (/native module|not available|not found/i.test(message)) throw new Error('Contactory saved this record locally. Saving to phone Contacts needs the installed app build; Expo Go does not include write access on every platform.');
-    throw new Error('Contactory saved this record locally, but the phone contact could not be created. You can retry from its details.');
+    if (/permission|denied|unauthorized/i.test(message)) throw new Error('Vemori saved this record, but phone Contacts permission was not granted. You can allow it in device settings and try again.');
+    if (/native module|not available|not found/i.test(message)) throw new Error('Vemori saved this record locally. Saving to phone Contacts needs the installed app build; Expo Go does not include write access on every platform.');
+    throw new Error('Vemori saved this record locally, but the phone contact could not be created. You can retry from its details.');
   }
 }

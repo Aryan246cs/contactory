@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import type { ThemeMode } from '@/theme/tokens';
 
+// Keep the existing on-device filename so current users keep their local library after rebranding.
 const dbPromise = SQLite.openDatabaseAsync('contactory.db');
 
 export async function initializeDatabase() {
@@ -50,7 +51,7 @@ export async function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_contact_notes_contact ON contact_notes(contact_id);
     CREATE INDEX IF NOT EXISTS idx_contact_tags_tag ON contact_tags(tag_id);
   `));
-  // Earlier prototypes reserved a table for card files, but Contactory never retains those files.
+  // Earlier prototypes reserved a table for card files, but Vemori never retains those files.
   await db.execAsync('DROP TABLE IF EXISTS scanned_cards;');
   return db;
 }

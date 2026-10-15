@@ -1,8 +1,8 @@
-# Contactory
+# Vemori
 
-> Every card has a story. Remember yours.
+> Every connection, remembered.
 
-Contactory is a local-first networking memory app. It keeps a person’s contact details and the context of meeting them together. No account is required.
+Vemori is a local-first networking memory app. It keeps a person’s contact details and the context of meeting them together. No account is required.
 
 ## Product flow
 
@@ -91,7 +91,7 @@ npx expo install --fix
 
 4. Scan the QR code with the camera (iOS) or Expo Go (Android).
 
-Expo Go can run onboarding, SQLite, camera/gallery capture, manual entry, contact editing, notes, local search, and CSV sharing. **OCR uses a custom native module and is not included in Expo Go.** If you tap Read this card in Expo Go, Contactory explains the limitation and lets you enter details manually. Native Contacts write behavior is also platform-dependent in Expo Go; use a development build to validate it.
+Expo Go can run onboarding, SQLite, camera/gallery capture, manual entry, contact editing, notes, local search, and CSV sharing. **OCR uses a custom native module and is not included in Expo Go.** If you tap Read this card in Expo Go, Vemori explains the limitation and lets you enter details manually. Native Contacts write behavior is also platform-dependent in Expo Go; use a development build to validate it.
 
 ## Run with OCR and native integrations
 
@@ -111,7 +111,7 @@ npx eas-cli build --profile development --platform android
 npx eas-cli build --profile development --platform ios
 ```
 
-After installing the development build, start Metro with `npm run start:dev` and open Contactory from the dev client. `npm start` intentionally targets Expo Go.
+After installing the development build, start Metro with `npm run start:dev` and open Vemori from the dev client. `npm start` intentionally targets Expo Go.
 
 ## Local data and privacy
 
@@ -127,4 +127,4 @@ npx expo-doctor
 npm run start
 ```
 
-Use [the real-device checklist](docs/REAL_DEVICE_TESTING.md) for camera/OCR/permission/restart checks and [the store checklist](docs/STORE_RELEASE_CHECKLIST.md) for publishing. Android package and iOS bundle identifiers in `app.json` are placeholders (`com.example.contactory`) and must be replaced before store builds. Store approval, credentials, and physical-device validation are not claimed.
+Use [the real-device checklist](docs/REAL_DEVICE_TESTING.md) for camera/OCR/permission/restart checks and [the store checklist](docs/STORE_RELEASE_CHECKLIST.md) for publishing. Android package and iOS bundle identifiers in `app.json` are placeholders (`com.example.vemori`) and must be replaced before store builds. Store approval, credentials, and physical-device validation are not claimed.

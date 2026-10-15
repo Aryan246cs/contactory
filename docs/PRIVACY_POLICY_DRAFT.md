@@ -1,22 +1,22 @@
-# Contactory privacy policy draft
+# Vemori privacy policy draft
 
 **Draft for review.** This document describes the current local-first MVP behavior. It is not legal advice and must be reviewed and completed before publication.
 
-## Data stored in Contactory
+## Data stored in Vemori
 
-Contact names, company and job details, selected phone numbers, email addresses, websites, addresses, optional meeting notes, and tags are stored in the app's local SQLite database on the device. The MVP does not enable SQLite encryption. Card images and raw OCR text are temporary inputs and are not retained after the review flow. There is no card-image history or remote Contactory storage.
+Contact names, company and job details, selected phone numbers, email addresses, websites, addresses, optional meeting notes, and tags are stored in the app's local SQLite database on the device. The MVP does not enable SQLite encryption. Card images and raw OCR text are temporary inputs and are not retained after the review flow. There is no card-image history or remote Vemori storage.
 
 ## Card scanning
 
-Contactory processes card images on-device using Google ML Kit on Android and Apple Vision on iOS. Contactory does not send card images or extracted fields to a Contactory server for OCR.
+Vemori processes card images on-device using Google ML Kit on Android and Apple Vision on iOS. Vemori does not send card images or extracted fields to a Vemori server for OCR.
 
 ## Phone Contacts
 
-If you choose “Also save to phone Contacts,” the selected contact fields are written to the device's Contacts system. This creates a separate device Contacts record. Personal meeting notes remain in Contactory. Deleting a Contactory record does not remove the corresponding phone Contacts record.
+If you choose “Also save to phone Contacts,” the selected contact fields are written to the device's Contacts system. This creates a separate device Contacts record. Personal meeting notes remain in Vemori. Deleting a Vemori record does not remove the corresponding phone Contacts record.
 
 ## Export
 
-When you export CSV, Contactory creates a temporary local file and opens the operating system share sheet. You choose whether and where to share or save it. Contactory does not upload the file.
+When you export CSV, Vemori creates a temporary local file and opens the operating system share sheet. You choose whether and where to share or save it. Vemori does not upload the file.
 
 ## Network and third parties
 
@@ -24,7 +24,7 @@ This MVP has no login, cloud backup, analytics SDK, or advertising SDK configure
 
 ## Your choices
 
-You may edit and delete local Contactory records, export them, and choose whether to write selected contact details to your device Contacts. The delete-all action removes contacts, notes, custom tags, and group assignments from Contactory. Local data deletion does not delete phone Contacts entries.
+You may edit and delete local Vemori records, export them, and choose whether to write selected contact details to your device Contacts. The delete-all action removes contacts, notes, custom tags, and group assignments from Vemori. Local data deletion does not delete phone Contacts entries.
 
 ## Complete before release
 

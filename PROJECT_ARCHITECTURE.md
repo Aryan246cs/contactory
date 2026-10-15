@@ -1,8 +1,8 @@
-# Contactory project architecture
+# Vemori project architecture
 
 ## Product and runtime model
 
-Contactory is an offline-first Android and iOS contact memory app. It has no application server, API, login, cloud database, or runtime backend. Business logic and persistent contact data live on the device. Expo Application Services (EAS) is used to build and distribute native app binaries; it is not part of the app's runtime data path.
+Vemori is an offline-first Android and iOS contact memory app. It has no application server, API, login, cloud database, or runtime backend. Business logic and persistent contact data live on the device. Expo Application Services (EAS) is used to build and distribute native app binaries; it is not part of the app's runtime data path.
 
 ```mermaid
 flowchart LR
@@ -67,13 +67,13 @@ sequenceDiagram
 
 The guide is measured in screen coordinates. `src/services/images/cropToGuide.ts` maps those bounds to the captured image using the camera preview's center-fill scaling, then crops the file with `expo-image-manipulator`. This is a fixed guide crop: the user still aligns the card inside the guide; the app does not perform automatic card-edge detection or perspective correction.
 
-The cropped image is passed to `src/services/ocr/recognizeText.ts`, which wraps `expo-ocr-kit` (on-device Apple Vision on iOS and ML Kit on Android). `src/services/ocr/contactParser.ts` deterministically extracts likely fields. The user reviews the suggestions before anything is saved. Raw OCR text and camera files are not retained after the review flow. Gallery images remain in the user's photo library; Contactory does not delete them.
+The cropped image is passed to `src/services/ocr/recognizeText.ts`, which wraps `expo-ocr-kit` (on-device Apple Vision on iOS and ML Kit on Android). `src/services/ocr/contactParser.ts` deterministically extracts likely fields. The user reviews the suggestions before anything is saved. Raw OCR text and camera files are not retained after the review flow. Gallery images remain in the user's photo library; Vemori does not delete them.
 
-OCR requires a Contactory development or release build containing the native module. Expo Go does not include `expo-ocr-kit`; camera cropping uses Expo's image manipulation API and can run in an Expo Go-compatible client, but this project's complete scan flow is intended for a development build.
+OCR requires a Vemori development or release build containing the native module. Expo Go does not include `expo-ocr-kit`; camera cropping uses Expo's image manipulation API and can run in an Expo Go-compatible client, but this project's complete scan flow is intended for a development build.
 
 ## Local data layer and relationships
 
-SQLite (`expo-sqlite`) is the source of truth. `src/database/database.ts` opens `contactory.db`, enables WAL and foreign keys, creates the schema, and provides app metadata helpers. `src/database/repositories/contactsRepository.ts` owns contact CRUD, search, duplicate detection, and delete operations. UI screens do not issue contact SQL directly.
+SQLite (`expo-sqlite`) is the source of truth. `src/database/database.ts` keeps the original `contactory.db` filename so existing Vemori users retain their local library after the rebrand. It enables WAL and foreign keys, creates the schema, and provides app metadata helpers. `src/database/repositories/contactsRepository.ts` owns contact CRUD, search, duplicate detection, and delete operations. UI screens do not issue contact SQL directly.
 
 ```mermaid
 erDiagram
@@ -122,7 +122,7 @@ erDiagram
 
 `contact_phones.contact_id`, `contact_notes.contact_id`, and `contact_tags.contact_id` reference `contacts.id` with `ON DELETE CASCADE`. `contact_tags.tag_id` references `tags.id`. Suggested tags are seeded locally but unassigned. `app_metadata` has independent key/value rows, currently including onboarding completion and appearance preference. Indexes cover contact names, companies, and child-to-contact lookups.
 
-The review workflow saves an optional memory note per contact. Card images and OCR output exist only as transient scan inputs; there is no scan-history table or file retention. Duplicate review uses email and phone matches; a merge transaction moves all notes, unique numbers, and tag memberships into the selected surviving contact, fills its missing fields, and deletes the duplicate. The `native_contact_id` column is an optional identifier returned by the device Contacts system; it is not a foreign key into SQLite. Deleting a Contactory contact does not delete the native phone contact.
+The review workflow saves an optional memory note per contact. Card images and OCR output exist only as transient scan inputs; there is no scan-history table or file retention. Duplicate review uses email and phone matches; a merge transaction moves all notes, unique numbers, and tag memberships into the selected surviving contact, fills its missing fields, and deletes the duplicate. The `native_contact_id` column is an optional identifier returned by the device Contacts system; it is not a foreign key into SQLite. Deleting a Vemori contact does not delete the native phone contact.
 
 Contact, selected phone numbers, and the current note are written inside a SQLite transaction. Search uses local parameterized `LIKE` queries across identity, phone, and note fields. Export reads the repository's contact records and writes a temporary CSV for the system share sheet.
 
@@ -138,7 +138,7 @@ Contact, selected phone numbers, and the current note are written inside a SQLit
 | `expo-image-picker` | Select an existing card image. | `app/scan/index.tsx` |
 | `expo-image-manipulator` | Crop the camera photo to the measured guide region. | `src/services/images/cropToGuide.ts` |
 | `expo-ocr-kit` | Native on-device text recognition; requires a custom native build. | `src/services/ocr/recognizeText.ts` |
-| `expo-contacts` | Optional create/update in phone Contacts; copies the Contactory memory into the phone contact’s Notes field. | `src/services/contacts/nativeContacts.ts` |
+| `expo-contacts` | Optional create/update in phone Contacts; copies the Vemori memory into the phone contact’s Notes field. | `src/services/contacts/nativeContacts.ts` |
 | `expo-file-system` | Temporary image cleanup and CSV file creation. | `app/scan/`, `src/services/export/` |
 | `expo-sharing` | Open the operating system share sheet for CSV export. | `src/services/export/exportContacts.ts` |
 | `expo-haptics` | Capture and destructive-action feedback. | Scan and settings screens |

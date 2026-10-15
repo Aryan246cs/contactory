@@ -49,7 +49,7 @@ describe('contacts repository', () => {
     expect(contact?.notes[0].content).toBe('Follow up');
   });
 
-  it('deletes only the Contactory contact row', async () => {
+  it('deletes only the Vemori contact row', async () => {
     await deleteContact('contact-1');
     expect(db.runAsync).toHaveBeenCalledWith('DELETE FROM contacts WHERE id=?', 'contact-1');
   });

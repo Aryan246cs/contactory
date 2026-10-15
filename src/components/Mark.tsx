@@ -1,11 +1,6 @@
-import { View } from 'react-native';
-import { useTheme } from '@/theme/ThemeProvider';
+import { Image } from 'react-native';
 
 export function Mark({ small = false }: { small?: boolean }) {
-  const { colors } = useTheme();
-  const size = small ? 19 : 26;
-  return <View style={{ width: size, height: size, borderRadius: size * 0.34, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
-    <View style={{ width: size * 0.44, height: size * 0.44, borderRadius: size, borderWidth: 1.5, borderColor: colors.canvas }} />
-    <View style={{ position: 'absolute', width: 3, height: 3, borderRadius: 2, backgroundColor: colors.accentBright, right: size * 0.19, top: size * 0.17 }} />
-  </View>;
+  const size = small ? 19 : 32;
+  return <Image source={require('../../assets/images/vemori-mark.png')} resizeMode="contain" style={{ width: size, height: size }} accessibilityLabel="Vemori" />;
 }

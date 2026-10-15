@@ -1,6 +1,6 @@
-# Contactory real-device testing
+# Vemori real-device testing
 
-Use an Expo development build for OCR and native Contacts coverage. Expo Go can validate navigation, onboarding, SQLite, manual entry, and camera/gallery flows, but does not contain the Contactory OCR native module.
+Use an Expo development build for OCR and native Contacts coverage. Expo Go can validate navigation, onboarding, SQLite, manual entry, and camera/gallery flows, but does not contain the Vemori OCR native module.
 
 ## Android development build
 

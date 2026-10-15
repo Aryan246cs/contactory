@@ -1,6 +1,6 @@
-# Contactory deployment and publishing guide
+# Vemori deployment and publishing guide
 
-This is a first-release walkthrough for publishing the current Expo app on Google Play and the Apple App Store. It assumes the app remains offline-first: the installed app stores contacts, notes, and tags in SQLite on the user's device. Scanned card photos and OCR text are temporary inputs and are not retained. There is no Contactory API, hosted database, login, or required backend to deploy.
+This is a first-release walkthrough for publishing the current Expo app on Google Play and the Apple App Store. It assumes the app remains offline-first: the installed app stores contacts, notes, and tags in SQLite on the user's device. Scanned card photos and OCR text are temporary inputs and are not retained. There is no Vemori API, hosted database, login, or required backend to deploy.
 
 ## 1. What you need to decide first
 
@@ -18,7 +18,7 @@ This is a first-release walkthrough for publishing the current Expo app on Googl
 
 ## 3. Prepare this repository
 
-1. Pick the final public name and identifiers. Update `expo.name`, `expo.slug`, `expo.ios.bundleIdentifier`, `expo.android.package`, scheme, version, and any visible brand copy in `app.json` and the app. Replace `com.example.contactory` with identifiers under a domain or identity you control.
+1. Pick the final public name and identifiers. Update `expo.name`, `expo.slug`, `expo.ios.bundleIdentifier`, `expo.android.package`, scheme, version, and any visible brand copy in `app.json` and the app. Replace `com.example.vemori` with identifiers under a domain or identity you control.
 2. Create the final icon and store art. Provide an adaptive Android icon and a square iOS app icon meeting current store specifications. Prepare phone screenshots from real release builds; tablet screenshots are useful because this app currently declares iPad support.
 3. Review permission prompts in `app.json`. Camera is used when scanning; photo library is used only for user-selected card images; Contacts is optional when saving to the phone. Remove any permission that the final app does not need. Verify the actual generated Android manifest and iOS privacy strings after prebuild.
 4. Review `docs/PRIVACY_POLICY_DRAFT.md` and publish a completed policy. Confirm app privacy / Data Safety answers against the production dependencies and the actual user-initiated export/native Contacts flows.

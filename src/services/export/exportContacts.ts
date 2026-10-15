@@ -17,9 +17,9 @@ export async function exportContactsCsv(): Promise<void> {
     contact.notes[0]?.content ?? '', contact.notes[0]?.meetingDate ?? '', contact.notes[0]?.location ?? '', contact.tags.map((tag) => tag.name).join(' | '), contact.createdAt,
   ]);
   const csv = `\uFEFF${[columns, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n')}`;
-  const file = new File(Paths.cache, `contactory-contacts-${new Date().toISOString().slice(0, 10)}.csv`);
+  const file = new File(Paths.cache, `vemori-contacts-${new Date().toISOString().slice(0, 10)}.csv`);
   file.create({ overwrite: true });
   file.write(csv);
   if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing is unavailable on this device.');
-  await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: 'Export Contactory contacts', UTI: 'public.comma-separated-values-text' });
+  await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: 'Export Vemori contacts', UTI: 'public.comma-separated-values-text' });
 }

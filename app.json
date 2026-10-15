@@ -1,26 +1,35 @@
 {
   "expo": {
-    "name": "Contactory",
-    "slug": "contactory",
+    "name": "Vemori",
+    "splash": {
+      "image": "./assets/images/vemori-mark.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F6F5FA"
+    },
+    "slug": "vemori",
     "version": "1.0.0",
-    "scheme": "contactory",
+    "scheme": "vemori",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.contactory",
+      "bundleIdentifier": "com.example.vemori",
       "accessesContactNotes": true
     },
     "android": {
-      "package": "com.example.contactory",
+      "package": "com.example.vemori",
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.READ_CONTACTS",
         "android.permission.WRITE_CONTACTS"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/vemori-mark.png",
+        "backgroundColor": "#1E1753"
+      }
     },
     "plugins": [
       "expo-router",
@@ -28,25 +37,25 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Contactory uses the camera when you choose Scan Card."
+          "cameraPermission": "Vemori uses the camera when you choose Scan Card."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Contactory lets you choose a card photo when you tap Gallery."
+          "photosPermission": "Vemori lets you choose a card photo when you tap Gallery."
         }
       ],
       [
         "expo-contacts",
         {
-          "contactsPermission": "Contactory can add a contact to your phone when you choose Save to Phone Contacts."
+          "contactsPermission": "Vemori can add a contact to your phone when you choose Save to Phone Contacts."
         }
       ],
       [
         "expo-ocr-kit",
         {
-          "cameraPermission": "Contactory uses the camera when you choose Scan Card."
+          "cameraPermission": "Vemori uses the camera when you choose Scan Card."
         }
       ]
     ],
@@ -58,6 +67,7 @@
       "eas": {
         "projectId": "d7b7f035-6520-4724-8bc7-2fed9911030a"
       }
-    }
+    },
+    "icon": "./assets/images/vemori-icon.png"
   }
 }

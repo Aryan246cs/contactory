@@ -8,7 +8,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { Mark } from '@/components/Mark';
 
 const slides = [
-  { eyebrow: 'A BETTER WAY TO REMEMBER', title: 'Every card has a story.', subtitle: 'Remember yours.', art: 'card' },
+  { eyebrow: 'A BETTER WAY TO REMEMBER', title: 'Every connection,', subtitle: 'remembered.', art: 'card' },
   { eyebrow: 'PEOPLE, NOT PAPER', title: 'Never forget someone you meet.', subtitle: 'Keep the person, the contact, and the memory together.', art: 'memory' },
   { eyebrow: 'PRIVATE BY DESIGN', title: 'Your network. Your memory.', subtitle: 'Stored privately on your device.', art: 'private' },
 ] as const;
@@ -21,7 +21,7 @@ export default function Onboarding() {
   const finish = async () => { await setOnboardingComplete(); router.replace('/'); };
 
   return <SafeAreaView style={styles.safe}>
-    <View style={styles.top}><Mark /><Text style={styles.wordmark}>Contactory</Text><Text style={styles.step}>{String(page + 1).padStart(2, '0')} / 03</Text></View>
+    <View style={styles.top}><Mark /><Text style={styles.wordmark}>Vemori</Text><Text style={styles.step}>{String(page + 1).padStart(2, '0')} / 03</Text></View>
     <View style={styles.artboard}>
       <View style={[styles.orbit, styles.orbitOuter]} /><View style={[styles.orbit, styles.orbitInner]} />
       <View style={styles.cardBack}><View style={styles.cardLogo}><Mark small /></View><View style={styles.cardLines}><View style={[styles.cardLine, { width: '74%' }]} /><View style={[styles.cardLine, { width: '52%' }]} /><View style={[styles.cardLine, { width: '66%' }]} /></View></View>
@@ -31,12 +31,12 @@ export default function Onboarding() {
     <View style={styles.copy}>
       <Text style={styles.eyebrow}>{slide.eyebrow}</Text>
       <Text style={styles.title}>{slide.title}</Text>
-      <Text style={styles.subtitle}>{slide.subtitle}</Text>
+      {slide.subtitle ? <Text style={styles.subtitle}>{slide.subtitle}</Text> : null}
     </View>
     <View style={styles.bottom}>
       <View style={styles.dots}>{slides.map((_, i) => <View key={i} style={[styles.dot, i === page && styles.dotActive]} />)}</View>
       <Pressable accessibilityRole="button" style={({ pressed }) => [styles.button, pressed && { opacity: 0.88, transform: [{ scale: 0.985 }] }]} onPress={page === 2 ? finish : () => setPage(page + 1)}>
-        <Text style={styles.buttonText}>{page === 2 ? 'Start using Contactory' : 'Continue'}</Text><Text style={styles.arrow}>→</Text>
+        <Text style={styles.buttonText}>{page === 2 ? 'Start using Vemori' : 'Continue'}</Text><Text style={styles.arrow}>→</Text>
       </Pressable>
       {page < 2 && <Pressable accessibilityRole="button" onPress={finish} hitSlop={12}><Text style={styles.skip}>Skip intro</Text></Pressable>}
     </View>

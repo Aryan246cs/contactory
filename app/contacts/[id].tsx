@@ -39,20 +39,20 @@ export default function ContactDetails() {
       const nativeId = await saveToPhoneContacts({ ...contact, phones: contact.phones.map((p) => ({ value: p.value, label: p.label, selected: true })), note: contact.notes.map((entry) => entry.content).filter(Boolean).join('\n'), meetingDate: contact.notes[0]?.meetingDate ?? '', location: contact.notes[0]?.location ?? '' });
       await setNativeContactId(contact.id, nativeId);
       setContact({ ...contact, nativeContactId: nativeId });
-      Alert.alert('Added to phone Contacts', 'Your contact details and memory were copied to your phone contact. Contactory keeps its own copy too.');
+      Alert.alert('Added to phone Contacts', 'Your contact details and memory were copied to your phone contact. Vemori keeps its own copy too.');
     } catch (error) {
       if (error instanceof ContactsPermissionError) {
         Alert.alert('Phone Contacts permission needed', error.message, [
           { text: 'Not now', style: 'cancel' },
-          { text: 'Open Settings', onPress: () => { void Linking.openSettings().catch(() => Alert.alert('Settings unavailable', 'Open Contactory in your device settings to allow Contacts access.')); } },
+          { text: 'Open Settings', onPress: () => { void Linking.openSettings().catch(() => Alert.alert('Settings unavailable', 'Open Vemori in your device settings to allow Contacts access.')); } },
         ]);
       } else {
-        Alert.alert('Saved to Contactory', error instanceof Error ? error.message : 'Phone contact could not be created.');
+        Alert.alert('Saved to Vemori', error instanceof Error ? error.message : 'Phone contact could not be created.');
       }
     }
     finally { setSavingNative(false); }
   };
-  const askDelete = () => Alert.alert('Delete this contact?', 'This removes the person, their notes, and their group assignments from Contactory. A phone contact is not deleted.', [
+  const askDelete = () => Alert.alert('Delete this contact?', 'This removes the person, their notes, and their group assignments from Vemori. A phone contact is not deleted.', [
     { text: 'Cancel', style: 'cancel' }, { text: 'Delete Contact', style: 'destructive', onPress: async () => { await deleteContact(id); router.replace('/contacts'); } },
   ]);
 
@@ -80,7 +80,7 @@ export default function ContactDetails() {
         <Pressable onPress={() => router.push({ pathname: '/contacts/edit/[id]', params: { id: contact.id } })}><Text style={styles.memoryEdit}>{note?.content ? 'Edit your memory  →' : 'Add a memory  →'}</Text></Pressable>
       </View>
       {contact.tags.length > 0 ? <View style={styles.tags}><Text style={styles.eyebrow}>GROUPS</Text><View style={styles.tagList}>{contact.tags.map((tag) => <Pressable key={tag.id} onPress={() => router.push({ pathname: '/groups/[id]' as never, params: { id: tag.id, name: tag.name } })} style={styles.tag}><Text style={styles.tagText}># {tag.name}</Text></Pressable>)}</View></View> : null}
-      <View style={styles.phoneStatus}><Text style={styles.phoneStatusTitle}>{contact.nativeContactId ? '✓  Added to phone Contacts' : 'Saved privately in Contactory'}</Text><Text style={styles.phoneStatusSub}>{contact.nativeContactId ? 'Contactory keeps a copy of your memory too.' : 'Your contact and memory are stored on this device.'}</Text>
+      <View style={styles.phoneStatus}><Text style={styles.phoneStatusTitle}>{contact.nativeContactId ? '✓  Added to phone Contacts' : 'Saved privately in Vemori'}</Text><Text style={styles.phoneStatusSub}>{contact.nativeContactId ? 'Vemori keeps a copy of your memory too.' : 'Your contact and memory are stored on this device.'}</Text>
         {!contact.nativeContactId && <ActionButton title={savingNative ? 'Adding…' : 'Save to Phone Contacts'} variant="secondary" disabled={savingNative} onPress={nativeSave} />}
       </View>
       <View style={styles.nextActions}>
@@ -91,7 +91,7 @@ export default function ContactDetails() {
           <Text style={styles.scanActionText}>Scan Another Card</Text>
         </Pressable>
       </View>
-      <Pressable onPress={askDelete} style={styles.delete}><Text style={styles.deleteText}>Delete from Contactory</Text></Pressable>
+      <Pressable onPress={askDelete} style={styles.delete}><Text style={styles.deleteText}>Delete from Vemori</Text></Pressable>
     </ScrollView>
   </SafeAreaView>;
 }

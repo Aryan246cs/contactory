@@ -9,8 +9,8 @@ export async function recognizeTextFromImage(uri: string): Promise<OCRResult> {
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     if (/expo.?go|native module|could not be found|not installed|unavailable/i.test(message)) {
-      throw new Error('On-device card reading is unavailable in Expo Go. Open Contactory in its development build, or enter the details manually.');
+      throw new Error('On-device card reading is unavailable in Expo Go. Open Vemori in its development build, or enter the details manually.');
     }
-    throw new Error('Contactory could not read this image. Try a clearer, well-lit photo or enter the details manually.');
+    throw new Error('Vemori could not read this image. Try a clearer, well-lit photo or enter the details manually.');
   }
 }

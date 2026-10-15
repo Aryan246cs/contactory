@@ -34,7 +34,7 @@ Do not claim something works unless you have actually validated it.
 
 The product name is:
 
-**Contactory**
+**Vemori**
 
 Do not rename it.
 
@@ -44,11 +44,11 @@ Do not use placeholder names such as:
 - Business Card Scanner
 - Contact Manager
 
-The application is called **Contactory** everywhere.
+The application is called **Vemori** everywhere.
 
 Use:
 
-**Contactory**
+**Vemori**
 
 as the app name in:
 - UI
@@ -73,7 +73,7 @@ They define the product.
 
 ## PRIMARY TAGLINE
 
-> **Every card has a story. Remember yours.**
+> **Every connection, remembered.**
 
 Use this prominently throughout the onboarding and home experience.
 
@@ -111,16 +111,16 @@ They are preserving the person, the contact, and the context of the interaction.
 
 # 3. PRODUCT CONCEPT
 
-Contactory is a modern personal networking application.
+Vemori is a modern personal networking application.
 
 A user receives a physical visiting/business card.
 
-Instead of putting it into their wallet, bag, drawer, or desk and eventually forgetting about it, they immediately open Contactory.
+Instead of putting it into their wallet, bag, drawer, or desk and eventually forgetting about it, they immediately open Vemori.
 
 They:
 
 1. Scan the card.
-2. Contactory recognizes the information.
+2. Vemori recognizes the information.
 3. The application extracts:
    - Name
    - Company
@@ -135,7 +135,7 @@ They:
    - Multiple
    - All
 6. The user can add a short personal note.
-7. Contactory stores the contact locally.
+7. Vemori stores the contact locally.
 8. The user can optionally save it to the phone's native Contacts.
 9. The user can later search for the person and remember:
    - Who they were.
@@ -186,7 +186,7 @@ Take inspiration from the design principles of products such as:
 
 Do NOT copy their interfaces.
 
-Develop an original Contactory visual identity.
+Develop an original Vemori visual identity.
 
 ---
 
@@ -355,7 +355,7 @@ It should immediately communicate:
 
 Then:
 
-> Every card has a story. Remember yours.
+> Every connection, remembered.
 
 And the dominant CTA:
 
@@ -382,8 +382,8 @@ Good afternoon, Aryan.
 Never forget
 someone you meet.
 
-Every card has a story.
-Remember yours.
+Every connection, remembered.
+
 
 
         ┌─────────────────────┐
@@ -529,7 +529,7 @@ Do NOT make login mandatory.
 
 The user should be able to:
 
-- Install Contactory.
+- Install Vemori.
 - Open it.
 - Scan a card.
 - Save it.
@@ -1010,17 +1010,17 @@ Example success state:
 ```text
 Contact Saved
 
-✓ Saved to Contactory
+✓ Saved to Vemori
 ✓ Added to your phone contacts
 
 Your note remains safely stored
-inside Contactory.
+inside Vemori.
 ```
 
 If native Contacts permission is denied:
 
 ```text
-Saved to Contactory
+Saved to Vemori
 
 Your contact and note are safely stored
 inside the app.
@@ -1069,11 +1069,11 @@ Create a visually impressive onboarding experience.
 
 Slide 1:
 
-# Every card has a story.
+# Every connection, remembered.
 
 Subtitle:
 
-**Remember yours.**
+****
 
 Visual:
 A beautiful animated business card transitioning into a digital contact.
@@ -1106,7 +1106,7 @@ A subtle privacy/local-storage visual.
 
 Final CTA:
 
-# Start using Contactory
+# Start using Vemori
 
 Do not make onboarding long.
 
@@ -1120,11 +1120,11 @@ Minimal.
 
 Display:
 
-**Contactory**
+**Vemori**
 
 and optionally:
 
-**Every card has a story. Remember yours.**
+**Every connection, remembered.**
 
 Do not create a generic spinner screen.
 
@@ -1242,7 +1242,7 @@ Settings should contain:
 
 ## About
 - App version
-- Contactory
+- Vemori
 - Tagline
 
 Do not show cloud sync controls until cloud sync exists.
@@ -1295,7 +1295,7 @@ Example:
 Delete everything?
 
 This permanently removes your
-Contactory contacts, notes, and
+Vemori contacts, notes, and
 stored card records from this device.
 
 This cannot be undone.
@@ -1320,7 +1320,7 @@ Check likely matches using:
 Potential duplicate:
 
 ```text
-This person may already be in Contactory.
+This person may already be in Vemori.
 
 Rahul Sharma
 Acme Technologies
@@ -1687,8 +1687,8 @@ Prepare the project for submission.
 
 Configure:
 
-- App name: Contactory.
-- Slug: appropriate Contactory slug.
+- App name: Vemori.
+- Slug: appropriate Vemori slug.
 - Android package identifier.
 - iOS bundle identifier.
 - Scheme.
@@ -1778,13 +1778,13 @@ Create a professional README.
 
 Start with:
 
-# Contactory
+# Vemori
 
-> Every card has a story. Remember yours.
+> Every connection, remembered.
 
 Then explain:
 
-- What Contactory is.
+- What Vemori is.
 - Problem.
 - Solution.
 - Core workflow.
@@ -2236,7 +2236,7 @@ Do not overwrite unrelated files.
 
 Do not commit secrets.
 
-If the repository contains existing functionality, preserve it unless it conflicts with the Contactory implementation.
+If the repository contains existing functionality, preserve it unless it conflicts with the Vemori implementation.
 
 ---
 
@@ -2413,7 +2413,7 @@ The actual repository changes are the primary output.
 
 # 73. FINAL DEFINITION OF DONE
 
-Contactory's MVP is considered implemented when a user can:
+Vemori's MVP is considered implemented when a user can:
 
 1. Install the application.
 2. Open it without logging in.
@@ -2454,9 +2454,9 @@ Contactory's MVP is considered implemented when a user can:
 
 And throughout the experience, the product should reinforce:
 
-# Contactory
+# Vemori
 
-### Every card has a story. Remember yours.
+### Every connection, remembered.
 
 ### Scan Card
 
@@ -2486,4 +2486,4 @@ Do not stop at a prototype.
 
 Do not stop at mock screens.
 
-Build Contactory.
+Build Vemori.

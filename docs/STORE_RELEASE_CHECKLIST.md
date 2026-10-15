@@ -1,4 +1,4 @@
-# Contactory store release checklist
+# Vemori store release checklist
 
 ## Google Play
 
