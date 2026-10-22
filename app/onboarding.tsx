@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { setOnboardingComplete } from '@/database/database';
@@ -15,12 +15,14 @@ const slides = [
 
 export default function Onboarding() {
   const { colors } = useTheme();
-  const styles = makeStyles(colors);
+  const { height } = useWindowDimensions();
+  const compact = height < 700;
+  const styles = makeStyles(colors, compact);
   const [page, setPage] = useState(0);
   const slide = slides[page];
   const finish = async () => { await setOnboardingComplete(); router.replace('/'); };
 
-  return <SafeAreaView style={styles.safe}>
+  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.content} bounces={false}>
     <View style={styles.top}><Mark /><Text style={styles.wordmark}>Vemori</Text><Text style={styles.step}>{String(page + 1).padStart(2, '0')} / 03</Text></View>
     <View style={styles.artboard}>
       <View style={[styles.orbit, styles.orbitOuter]} /><View style={[styles.orbit, styles.orbitInner]} />
@@ -40,15 +42,16 @@ export default function Onboarding() {
       </Pressable>
       {page < 2 && <Pressable accessibilityRole="button" onPress={finish} hitSlop={12}><Text style={styles.skip}>Skip intro</Text></Pressable>}
     </View>
-  </SafeAreaView>;
+  </ScrollView></SafeAreaView>;
 }
 
-const makeStyles = (colors: ThemeColors) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.canvas, paddingHorizontal: spacing.xl },
+const makeStyles = (colors: ThemeColors, compact: boolean) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.canvas },
+  content: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingBottom: spacing.lg },
   top: { height: 56, flexDirection: 'row', alignItems: 'center', gap: 9 },
   wordmark: { fontSize: 16, fontWeight: '700', color: colors.ink, letterSpacing: -0.4 },
   step: { marginLeft: 'auto', color: colors.muted, fontSize: 11, letterSpacing: 1.4, fontWeight: '700' },
-  artboard: { height: '42%', minHeight: 260, maxHeight: 390, marginTop: 14, borderRadius: radius.xl, backgroundColor: colors.artboard, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  artboard: { height: compact ? 220 : 300, minHeight: compact ? 220 : 260, maxHeight: 390, marginTop: 14, borderRadius: radius.xl, backgroundColor: colors.artboard, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   orbit: { position: 'absolute', borderWidth: 1, borderColor: colors.border, borderRadius: 999 }, orbitOuter: { width: 300, height: 300 }, orbitInner: { width: 218, height: 218 },
   cardBack: { width: 212, height: 128, borderRadius: 14, backgroundColor: colors.accentSoft, padding: 18, transform: [{ rotate: '-9deg' }], position: 'absolute', left: '17%', top: '27%' },
   cardLogo: { marginBottom: 18 }, cardLines: { gap: 6 }, cardLine: { height: 4, borderRadius: 2, backgroundColor: colors.muted },
@@ -56,7 +59,7 @@ const makeStyles = (colors: ThemeColors) => StyleSheet.create({
   avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' }, avatarText: { color: colors.accent, fontSize: 16, fontWeight: '700' },
   personLines: { flex: 1, gap: 7 }, personLine: { height: 4, borderRadius: 2, backgroundColor: colors.border }, sparkle: { position: 'absolute', top: -18, right: 5, color: colors.accent, fontSize: 26 },
   privacyBadge: { position: 'absolute', bottom: 26, left: 25, paddingHorizontal: 11, paddingVertical: 8, borderRadius: 20, flexDirection: 'row', gap: 6, alignItems: 'center', backgroundColor: colors.artboard }, lock: { color: colors.accent, fontSize: 15 }, badgeText: { color: colors.inkSoft, fontSize: 9, fontWeight: '800', letterSpacing: 1.1 },
-  copy: { flex: 1, justifyContent: 'center', paddingTop: 20 }, eyebrow: { color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1.6, marginBottom: 14 }, title: { color: colors.ink, fontSize: 37, lineHeight: 42, fontWeight: '700', letterSpacing: -1.8, maxWidth: 340 }, subtitle: { color: colors.inkSoft, fontSize: 16, lineHeight: 24, marginTop: 11, maxWidth: 310 },
+  copy: { flexGrow: 1, justifyContent: 'center', paddingTop: compact ? 16 : 20 }, eyebrow: { color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1.6, marginBottom: 14 }, title: { color: colors.ink, fontSize: compact ? 33 : 37, lineHeight: compact ? 38 : 42, fontWeight: '700', letterSpacing: -1.8, maxWidth: 340 }, subtitle: { color: colors.inkSoft, fontSize: 16, lineHeight: 24, marginTop: 11, maxWidth: 310 },
   bottom: { paddingBottom: spacing.lg, alignItems: 'center', gap: 17 }, dots: { flexDirection: 'row', gap: 7, marginBottom: 3 }, dot: { width: 5, height: 5, borderRadius: 5, backgroundColor: colors.border }, dotActive: { width: 20, backgroundColor: colors.accent },
   button: { width: '100%', height: 58, backgroundColor: colors.ink, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }, buttonText: { color: colors.paper, fontSize: 15, fontWeight: '700' }, arrow: { color: colors.paper, fontSize: 18, position: 'absolute', right: 22 }, skip: { color: colors.muted, fontSize: 13, padding: 3 },
 });

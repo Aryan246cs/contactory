@@ -113,6 +113,10 @@ npx eas-cli build --profile development --platform ios
 
 After installing the development build, start Metro with `npm run start:dev` and open Vemori from the dev client. `npm start` intentionally targets Expo Go.
 
+## Share a private test build
+
+To share an installable Android APK with a few testers, follow [the private testing guide](docs/PRIVATE_TESTING.md). The EAS preview build runs on its own and does not need a development server.
+
 ## Local data and privacy
 
 SQLite is the local source of truth. Contacts, phones, notes, native contact IDs, and minimal app metadata are stored on device. Foreign keys cascade when local contacts are deleted. No cloud service, login, analytics, advertising, or automatic upload is configured. SQLite encryption is not enabled or claimed.
