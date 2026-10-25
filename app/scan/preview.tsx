@@ -31,7 +31,7 @@ export default function CardPreview() {
     try {
       const result = await recognizeTextFromImage(uri);
       if (!result.text.trim()) throw new Error('We could not find readable text on this card. Try a brighter, sharper photo or enter the details manually.');
-      const parsed = result.text.trim() ? extractContactFields(result.text) : emptyParsedContact();
+      const parsed = result.text.trim() ? extractContactFields(result.text, result.blocks) : emptyParsedContact();
       clearCapturedImage();
       router.push({ pathname: '/scan/review', params: { draft: JSON.stringify({ ...parsed, note: '', meetingDate: '', location: '', rawOcrText: result.text }) } });
     } catch (e) {

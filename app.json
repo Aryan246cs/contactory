@@ -27,7 +27,7 @@
         "android.permission.WRITE_CONTACTS"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/vemori-mark.png",
+        "foregroundImage": "./assets/images/vemori-adaptive-foreground.png",
         "backgroundColor": "#1E1753"
       }
     },
