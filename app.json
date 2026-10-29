@@ -14,11 +14,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.vemori",
+      "bundleIdentifier": "com.tiger.vemori",
       "accessesContactNotes": true
     },
     "android": {
-      "package": "com.example.vemori",
+      "package": "com.tiger.vemori",
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA",
