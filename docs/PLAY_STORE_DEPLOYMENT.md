@@ -1,6 +1,6 @@
 # Publish Vemori on Google Play
 
-This guide takes the current repository from its present state to a production release on Google Play. It covers Android only. The app is an Expo SDK 57 / React Native app; contact data is stored in local SQLite, and card OCR currently runs on-device. There is no Vemori server to deploy. EAS Build creates the Android binary and EAS Submit can upload it to Play Console.
+This guide takes the current repository from its present state to a production release on Google Play. It covers Android only. The app is an Expo SDK 57 / React Native app; contact data is stored in local SQLite, and card OCR runs on-device. Its core features do not need a backend. If you enable the optional Groq field-suggestion experiment, deploy the small Worker proxy described below. EAS Build creates the Android binary and EAS Submit can upload it to Play Console.
 
 ## Current repository state
 
@@ -10,6 +10,7 @@ This guide takes the current repository from its present state to a production r
 - Build profiles: `development`, `preview` (internal APK), and `production` (store build; Android App Bundle by default).
 - EAS project ID is already configured in `app.json`. Confirm the EAS account/project belongs to the publisher before building.
 - OCR uses native on-device ML Kit on Android through `expo-ocr-kit`; Expo Go is not a release/test substitute for OCR.
+- Optional AI field suggestions use GPT-OSS 20B through `server/groq-proxy`. This Worker has not been deployed or configured with a Groq key. Without the endpoint configured, the local parser works as before.
 - `app.json` currently declares camera, microphone, read contacts, and write contacts permissions. The product flow described in the code uses camera for card scanning and optional Contacts access for saving a record. Review the generated manifest and remove any permission that is not needed; in particular, justify or remove microphone access if no shipped feature uses it.
 - No Play listing, public support page, completed privacy policy, Play Console account, signing ownership, or device release validation is included in this repository.
 
@@ -25,6 +26,32 @@ This guide takes the current repository from its present state to a production r
    ```
 
 4. Prepare a durable publisher-controlled support email and public HTTPS pages for support and the privacy policy. The privacy policy must describe the exact release: local contact storage, on-device OCR, camera/photo access, optional writing to phone Contacts, and user-triggered CSV sharing. Be clear that data copied to phone Contacts or shared through Android is subject to those services and the user's choices. The removed draft in this repo was not a published or legally reviewed policy.
+
+## Optional: configure the Groq suggestion proxy
+
+The app calls Groq only after the user taps **Ask AI to review these fields** and confirms sending the recognized text. It sends OCR text only, not the image. The local parser remains the fallback, and the review form does not auto-save AI output. The proxy enforces a strict JSON schema, checks that each proposed value appears in its cited OCR evidence, limits text size, times out requests, and applies a basic per-IP rate limit. This reduces errors and abuse; it does not make AI output infallible. Set a spending limit in Groq Console as well.
+
+1. Create a Groq API key in the [Groq Console](https://console.groq.com/keys). Do not paste it into the mobile app, `.env`, `app.json`, source code, or Git.
+2. From the repository root, log into Cloudflare and deploy the Worker once:
+
+   ```sh
+   npx wrangler login
+   npx wrangler deploy --config server/groq-proxy/wrangler.toml
+   ```
+
+3. Set the Groq key as a Worker secret. Wrangler will prompt for the secret value and deploy the updated Worker:
+
+   ```sh
+   npx wrangler secret put GROQ_API_KEY --config server/groq-proxy/wrangler.toml
+   ```
+
+   Copy the resulting `workers.dev` URL. The Worker calls Groq's chat completions API using `openai/gpt-oss-20b` and strict structured outputs. The model can be changed with the Worker `GROQ_MODEL` variable if you intentionally want to compare `openai/gpt-oss-120b`.
+
+4. Copy `.env.example` to `.env` and set `EXPO_PUBLIC_GROQ_SUGGESTION_URL` to the Worker URL. This is a public endpoint URL, not a secret. For EAS builds, configure the same public URL as an EAS environment variable for that build environment. Never set the Groq key as an `EXPO_PUBLIC_` variable.
+5. Restart Metro (or create a new build after setting the URL for a store binary). In the review form, tap **Ask AI to review these fields** and accept the per-scan disclosure. The AI suggestions are applied only where their confidence is not low; review the source evidence and correct anything wrong before saving.
+6. First compare the AI suggestion with the local parser on the cards that failed. Check the name, company, and title separately, and note when the raw OCR text itself omitted/misread the print. Keep the AI option off or remove the endpoint until privacy disclosures and policy text are ready for release.
+
+The recognized text contains other people's contact details. Groq's current [data controls documentation](https://console.groq.com/docs/your-data) says inference inputs/outputs are not retained by default, with limited reliability/abuse logging that may retain content for up to 30 days unless Zero Data Retention is enabled. Review those controls and the current service terms before enabling this in a public release. Update the hosted privacy policy and Play Data safety answers to disclose the optional user-triggered transfer to your Worker and Groq, including purpose, data types, and applicable retention. Do not describe the release as fully offline if this option is enabled.
 
 ## 2. Confirm app identity and release configuration
 
@@ -45,7 +72,7 @@ This guide takes the current repository from its present state to a production r
    ```
 
 3. Install that APK on physical Android devices. Check fresh install and upgrade behavior, first-run flow, camera permission allow/deny paths, camera capture and gallery selection, OCR with clear and difficult cards, editing every suggested field, multiple phone numbers, local save/search/restart/delete, optional save to phone Contacts, and CSV share-sheet export. Test offline operation and large text. Resolve issues and repeat the preview build after native/config changes.
-4. Check the release code and store claims against actual behavior. The parser is heuristic and users must review fields; do not promise perfect automatic recognition. Do not claim cloud sync, backup, or remote processing.
+4. Check the release code and store claims against actual behavior. OCR and field parsing are fallible and users must review fields; do not promise perfect automatic recognition. If the AI option is configured, disclose the optional recognized-text transfer to Groq in the privacy policy and Play Data safety form.
 5. Keep a record of tested devices, OS versions, app build/version code, issues found, and fixes. This will help answer Play's testing and production-readiness questions.
 
 ## 4. Create the Play Console app and store listing
@@ -53,7 +80,7 @@ This guide takes the current repository from its present state to a production r
 1. In Play Console, choose **Create app**. Set the app name, default language, app type, free/paid status, and required declarations. Use the same package ID as `app.json`.
 2. Complete the store listing: short and full descriptions, category, app icon, phone screenshots, contact email, and public support and privacy-policy URLs. Use screenshots from the actual app. Ensure text is readable and avoid functionality claims the app does not provide.
 3. Complete the App content tasks shown in Console. These commonly include privacy policy, ads, app access, target audience, content rating, and any permission declarations. Answer from the final build and intended audience.
-4. Complete Data safety accurately. The current app stores contacts and notes locally; OCR is on-device; a user can optionally copy details into Android Contacts and explicitly share a CSV. Explain these data paths according to the exact form definitions and final dependency/build behavior. Revisit the form if analytics, cloud sync, remote AI/OCR, crash reporting, advertising, or other network services are added.
+4. Complete Data safety accurately. The app stores contacts and notes locally; OCR runs on-device; a user can optionally copy details into Android Contacts and explicitly share a CSV. If the AI option is enabled, disclose that a user may send OCR text to the Vemori Worker and Groq for field suggestions. Explain each data path according to the exact form definitions and final dependency/build behavior. Revisit the form if analytics, cloud sync, remote AI/OCR, crash reporting, advertising, or other network services are added.
 5. Complete pricing and countries/regions, and provide any trader/publisher information requested for the chosen distribution regions. Review the Console dashboard until all required setup tasks are resolved.
 
 ## 5. Build a production Android App Bundle
@@ -118,3 +145,8 @@ The first EAS submission defaults to the internal testing track. You can also up
 - [Target API level requirements](https://developer.android.com/google/play/requirements/target-sdk)
 - [Expo: Build for Android](https://docs.expo.dev/build-reference/android-builds/)
 - [Expo: Submit to Google Play](https://docs.expo.dev/submit/android/)
+- [Groq: supported models](https://console.groq.com/docs/models)
+- [Groq: structured outputs](https://console.groq.com/docs/structured-outputs)
+- [Groq: data controls](https://console.groq.com/docs/your-data)
+- [Cloudflare Workers: rate limit binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/)
+- [Cloudflare Workers: secrets](https://developers.cloudflare.com/workers/configuration/secrets/)

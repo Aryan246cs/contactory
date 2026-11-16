@@ -7,6 +7,7 @@ import { Field } from '@/components/Field';
 import { ActionButton } from '@/components/ActionButton';
 import { saveContact, getContactById, findPotentialDuplicate, setNativeContactId, listTags, setContactTags } from '@/database/repositories/contactsRepository';
 import { ContactsPermissionError, saveToPhoneContacts } from '@/services/contacts/nativeContacts';
+import { isAiSuggestionsConfigured, requestAiContactSuggestions } from '@/services/ocr/aiFieldSuggestions';
 import { radius, spacing, type ThemeColors } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import { emptyParsedContact, type ContactDraft, type ParsedContact } from '@/types/contact';
@@ -33,6 +34,8 @@ export function ReviewContactScreen() {
   const [nativeContactId, setNativeContactIdState] = useState<string | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editId));
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiMessage, setAiMessage] = useState('');
   const [availableTags, setAvailableTags] = useState<Array<{ id: string; name: string; kind: string }>>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -77,6 +80,42 @@ export function ReviewContactScreen() {
   }, [calendarMonth]);
   const isoDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const chooseDate = (date: Date) => { update('meetingDate', isoDate(date)); setCalendarOpen(false); };
+
+  const requestAiHelp = () => {
+    if (!draft.rawOcrText) { setAiMessage('No scanned card text is available.'); return; }
+    Alert.alert(
+      'Send card text to Groq?',
+      'Vemori will send the text recognized from this card to Groq using GPT-OSS to suggest a name, company, and job title. The photo stays on this device. Groq is an external service. Suggestions are checked and you review them before saving.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Send recognized text', onPress: () => { void runAiSuggestions(); } },
+      ],
+    );
+  };
+
+  const runAiSuggestions = async () => {
+    if (!draft.rawOcrText || aiBusy) return;
+    setAiBusy(true);
+    setAiMessage('Asking GPT-OSS to review the recognized text…');
+    try {
+      const suggestions = await requestAiContactSuggestions(draft.rawOcrText);
+      const usable = (field: { value: string; confidence: 'high' | 'medium' | 'low' }) => field.value.trim() && field.confidence !== 'low';
+      const candidates = [...(draft.nameCandidates ?? []), ...suggestions.name_candidates.map((candidate) => candidate.value)]
+        .map((name) => name.trim()).filter(Boolean).filter((name, index, all) => all.findIndex((item) => item.toLocaleLowerCase() === name.toLocaleLowerCase()) === index);
+      setDraft((current) => ({
+        ...current,
+        fullName: usable(suggestions.full_name) ? suggestions.full_name.value : current.fullName,
+        company: usable(suggestions.company) ? suggestions.company.value : current.company,
+        jobTitle: usable(suggestions.job_title) ? suggestions.job_title.value : current.jobTitle,
+        nameCandidates: candidates,
+      }));
+      setAiMessage('AI suggestions added where its confidence was medium or high. Confidence is only a rough signal; check the quoted evidence and the card before saving.');
+    } catch (error) {
+      setAiMessage(`${error instanceof Error ? error.message : 'AI is unavailable.'} Your local parser results are unchanged.`);
+    } finally {
+      setAiBusy(false);
+    }
+  };
 
   const persist = async (saveAnyway = false) => {
     const hasAny = draft.fullName.trim() || draft.company.trim() || draft.email.trim() || draft.phones.some((phone) => phone.selected && phone.value.trim());
@@ -133,6 +172,12 @@ export function ReviewContactScreen() {
       <Text style={styles.intro}>{params.manual ? 'Add the details you want to remember.' : 'We found a few details. Review and adjust them before saving.'}</Text>
       <View style={styles.section}><Text style={styles.sectionTitle}>THE PERSON</Text>
         <Field label="Full name" value={draft.fullName} onChangeText={(v) => update('fullName', v)} placeholder="e.g. Rahul Sharma" autoCapitalize="words" />
+        {isAiSuggestionsConfigured() && Boolean(draft.rawOcrText) && !editId ? <View style={{ marginTop: 12 }}>
+          <Pressable accessibilityRole="button" disabled={aiBusy} onPress={requestAiHelp} style={{ paddingVertical: 11, paddingHorizontal: 13, borderWidth: 1, borderColor: colors.accent, borderRadius: radius.sm, alignItems: 'center', opacity: aiBusy ? 0.6 : 1 }}>
+            <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 13 }}>{aiBusy ? 'Reviewing with GPT-OSS…' : 'Ask AI to review these fields'}</Text>
+          </Pressable>
+          {aiMessage ? <Text accessibilityLiveRegion="polite" style={styles.hint}>{aiMessage}</Text> : null}
+        </View> : null}
         {(draft.nameCandidates?.length ?? 0) > 1 && !editId ? <View style={styles.nameCandidates}>
           <Text style={styles.hint}>More than one possible name was found. Choose the person for this contact:</Text>
           <View style={styles.tagList}>{draft.nameCandidates?.map((name) => {

@@ -76,4 +76,43 @@ describe('contact card parser', () => {
   it('infers a company from a non-generic email domain when the card omits a company line', () => {
     expect(extractContactFields('Priya Shah\nFounder\npriya@orbitlabs.com').company).toBe('Orbitlabs');
   });
+
+  it('strips credentials and honorifics from names and prefers the legal company name', () => {
+    const accurate = extractContactFields([
+      'AAccurate GROZ', 'A GROZ GROUP COMPANY', 'SASIDHARAN. B', 'Chief Operations Officer',
+      'ACCURATE PRODUCTS CORPORATION PRIVATE LTD.', 'AC-22A, AC24 & AC-25A, SIDCO Industrial Estate',
+      'Thirumudivakkam, Chennai - 600132, India', 'Mobile: +91 89398 79969',
+      'Email: sasidharan.balasubramani@accurateproducts.com',
+    ].join('\n'));
+    expect(accurate.fullName).toBe('SASIDHARAN. B');
+    expect(accurate.company).toBe('ACCURATE PRODUCTS CORPORATION PRIVATE LTD');
+    expect(accurate.jobTitle).toBe('Chief Operations Officer');
+
+    const yves = extractContactFields('YVES THERIAULT, PHD, PMP\nChief Catalyst for Innovation & Entrepreneurship\nQualcomm Institute\nUniversity of California San Diego\nytheriault@ucsd.edu');
+    expect(yves.fullName).toBe('YVES THERIAULT');
+    expect(yves.jobTitle).toContain('Chief Catalyst');
+
+    const santhakumar = extractContactFields('Dr. J. SANTHAKUMAR, M.E., Ph.D.\nAssociate Professor\nDepartment of Mechanical Engineering\nSRM Institute of Science & Technology');
+    expect(santhakumar.fullName).toBe('J. SANTHAKUMAR');
+
+    const gosink = extractContactFields('UC San Diego\nEric Gosink, PhD\nInnovation & Commercialization Manager\nOffice of Innovation and Commercialization\negosink@ucsd.edu');
+    expect(gosink.fullName).toBe('Eric Gosink');
+    expect(gosink.company).toBe('Office of Innovation and Commercialization');
+
+    const ramesh = extractContactFields('UNIVERSITY OF CALIFORNIA SAN DIEGO\nRamesh Rao, Ph.D.\nDirector: Qualcomm Institute | Calit2\nDistinguished Prof: Electrical & Computer Eng\nrrao@ucsd.edu');
+    expect(ramesh.fullName).toBe('Ramesh Rao');
+    expect(ramesh.company).toBe('UNIVERSITY OF CALIFORNIA SAN DIEGO');
+  });
+
+  it('keeps multiple people as review choices without treating slogans as names', () => {
+    const parsed = extractContactFields([
+      'Pradeep Yadav 7891185212', 'Ashish Yadav 9467054585', 'SHRI MARUTI PROPERTIES',
+      'Deals In: All Types of Industrial Properties', 'Buy | Sell | Lease', 'Construction',
+      'Head Office : 1st & 3rd Floor, Saraswati Tower, Abhay Singh Chowk', 'Near Om Juice, Rewari (Hr.)',
+    ].join('\n'));
+    expect(parsed.fullName).toBe('Pradeep Yadav');
+    expect(parsed.company).toBe('SHRI MARUTI PROPERTIES');
+    expect(parsed.jobTitle).toBe('');
+    expect(parsed.nameCandidates).toEqual(['Pradeep Yadav', 'Ashish Yadav']);
+  });
 });

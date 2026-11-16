@@ -6,8 +6,8 @@ const URL_RE = /(?:https?:\/\/)?(?:www\.)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a
 const PHONE_RE = /(?<!\w)\+?\d[\d\s()./-]{5,}\d(?!\w)/g;
 const LABEL_RE = /\b(mobile|mob|cell|phone|tel|telephone|office|work|direct|fax|home|main)\b/i;
 const TITLE_RE = /\b(ceo|cto|cfo|coo|chief|founder|co-founder|director|manager|president|vice president|vp|engineer|designer|consultant|developer|lead|head(?:\s+of)?|product|sales|marketing|finance|officer|partner|professor|owner|architect|analyst|specialist|executive|accountant|controller|human resources|hr|operations|technical|scientist|attorney|lawyer|doctor|nurse|realtor|broker|intern|advisor|associate|administrator|coordinator|representative|catalyst)\b/i;
-const COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|studio|labs|group|company|co\.|systems|partners|ventures|digital|services|properties|products|university|institute|college|school|hospital|foundation|association)\b/i;
-const STRONG_COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|properties|products|university|institute|college|school|hospital|foundation|association)\b/i;
+const COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|studio|labs|group|company|co\.|systems|partners|ventures|digital|services|properties|products|university|institute|college|school|hospital|foundation|association|office\s+of)\b/i;
+const STRONG_COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|properties|products|university|institute|college|school|hospital|foundation|association|office\s+of)\b/i;
 const NON_PERSON_RE = /\b(buy|sell|lease|rent|sale|purchase|deals?|industrial|construction|residential|commercial|properties|property|types|available|welcome|contact|head\s+office)\b/i;
 const GENERIC_EMAIL_HOSTS = new Set(['gmail', 'googlemail', 'yahoo', 'outlook', 'hotmail', 'live', 'icloud', 'me', 'aol', 'protonmail', 'proton', 'rediffmail']);
 
@@ -58,7 +58,7 @@ export function extractPhoneNumbers(text: string): ParsedPhone[] {
 }
 
 function cleanLine(line: string): string {
-  return line.replace(EMAIL_RE, ' ').replace(URL_RE, ' ').replace(PHONE_RE, ' ').replace(LABEL_RE, ' ')
+  return line.replace(EMAIL_RE, ' ').replace(URL_RE, ' ').replace(PHONE_RE, ' ').replace(/^\s*(?:mobile|mob|cell|phone|tel|telephone|office|work|direct|fax|home|main)\s*[:|-]\s*/i, ' ')
     .replace(/^\s*(name|company|organisation|organization|title|job title|email|website|web|address)\s*[:|-]\s*/i, ' ')
     .replace(/[|•·]/g, ' ').replace(/\s+/g, ' ').replace(/^[\s,;:|.-]+|[\s,;:|.-]+$/g, '').trim();
 }
@@ -87,6 +87,12 @@ function fieldLabel(raw: string, field: 'name' | 'company' | 'title' | 'address'
   return labels[field].test(raw.trim());
 }
 
+function isTitleLine(value: string): boolean {
+  // "Head Office" labels an address block, not a person's job title.
+  const withoutRegionAbbreviation = value.replace(/\(\s*hr\.?\s*\)/gi, ' ');
+  return TITLE_RE.test(withoutRegionAbbreviation) && !/\bhead\s+office\b/i.test(value);
+}
+
 function normalizedText(value: string): string { return value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); }
 
 function blockForLine(raw: string, blocks: ParserBlock[]) {
@@ -111,12 +117,17 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
 
   const rawLines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const cleaned = rawLines.map((line) => ({ raw: line, value: cleanLine(line), box: blockForLine(line, blocks) })).filter((line) => line.value.length > 1);
-  const titleIndex = cleaned.findIndex(({ value }) => TITLE_RE.test(value));
+  const titleIndex = cleaned.findIndex(({ value }) => isTitleLine(value));
   const title = titleIndex >= 0 ? cleaned[titleIndex] : undefined;
-  if (title) parsed.jobTitle = title.value;
+  const inlineTitleCompany = title?.value.includes(':')
+    ? title.value.split(':').slice(1).join(':').split('|')[0].trim()
+    : '';
+  if (title) parsed.jobTitle = title.value.includes(':') ? title.value.split(':')[0].trim() : title.value.split('|')[0].trim();
   const candidates = cleaned.map((line, index) => ({ ...line, index, nameText: cleanPersonCandidate(line.value) })).filter(({ raw, value, nameText }) => {
-    if (!nameText || TITLE_RE.test(value) || COMPANY_RE.test(value) || NON_PERSON_RE.test(value)) return false;
-    if (/\d|@|https?:/i.test(raw) || nameText.length > 42) return false;
+    if (!nameText || isTitleLine(value) || COMPANY_RE.test(value) || NON_PERSON_RE.test(value)) return false;
+    // The cleaner removes phone spans first; permit a person line that OCR
+    // merged with its adjacent number instead of discarding the whole line.
+    if (/@|https?:/i.test(raw) || nameText.length > 42) return false;
     const words = nameText.split(/\s+/);
     return words.length >= 2 && words.length <= 4 && words.every((word) => /^[\p{L}'’-]+\.?$/u.test(word));
   });
@@ -145,10 +156,15 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
   const labeledCompanyIndex = cleaned.findIndex(({ raw }) => fieldLabel(raw, 'company'));
   // Prefer an explicit legal/organization name over secondary logo copy such
   // as "A GROZ GROUP COMPANY" when both appear on the same card.
-  const companyIndex = cleaned.findIndex(({ value }) => STRONG_COMPANY_RE.test(value)) >= 0
-    ? cleaned.findIndex(({ value }) => STRONG_COMPANY_RE.test(value))
-    : cleaned.findIndex(({ value }) => COMPANY_RE.test(value));
-  let company = labeledCompanyIndex >= 0 ? cleaned[labeledCompanyIndex].value : companyIndex >= 0 ? cleaned[companyIndex].value : '';
+  const nonTitleLines = cleaned.filter(({ value }) => !isTitleLine(value));
+  const strongCompanyLine = nonTitleLines.find(({ value }) => STRONG_COMPANY_RE.test(value));
+  const anyCompanyLine = nonTitleLines.find(({ value }) => COMPANY_RE.test(value));
+  const companyIndex = strongCompanyLine
+    ? cleaned.indexOf(strongCompanyLine)
+    : anyCompanyLine ? cleaned.indexOf(anyCompanyLine) : -1;
+  let company = labeledCompanyIndex >= 0 ? cleaned[labeledCompanyIndex].value
+    : companyIndex >= 0 ? cleaned[companyIndex].value
+      : COMPANY_RE.test(inlineTitleCompany) ? inlineTitleCompany : '';
   if (!company) {
     company = cleaned.find(({ raw, value }) => value !== name?.value && raw === raw.toUpperCase() && /[A-Z]/.test(raw) && value.length > 2)?.value ?? '';
   }
@@ -158,17 +174,14 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
   if (suffixIndex > 0) {
     const previous = cleaned[suffixIndex - 1];
     const previousWords = previous.value.split(/\s+/);
-    if (previous.value !== name?.value && previousWords.length <= 2 && previous.value.length <= 22 && !TITLE_RE.test(previous.value) && !/\d|@/.test(previous.raw)) {
+    const looksLikePerson = previous.value === name?.value || candidates.some((candidate) => candidate.nameText === previous.value);
+    if (!looksLikePerson && previousWords.length <= 2 && previous.value.length <= 22 && !TITLE_RE.test(previous.value) && !/\d|@/.test(previous.raw)) {
       company = `${previous.value} ${company}`;
     }
   }
   if (!company) {
     const host = emailHost;
     if (host && !GENERIC_EMAIL_HOSTS.has(host) && !/^(info|contact|hello|mail|support|sales|admin|www)$/.test(host)) company = host[0].toUpperCase() + host.slice(1);
-  }
-  if (company && !/\b[A-Z0-9.-]+\.(?:com|org|net|io|co|in|ai|app|biz|info|tech|studio)\b/i.test(company)) {
-    const host = emailHost;
-    if (host && !GENERIC_EMAIL_HOSTS.has(host) && !company.toLowerCase().includes(host) && COMPANY_RE.test(company)) company = `${host[0].toUpperCase()}${host.slice(1)} ${company}`;
   }
   if (company) parsed.company = company;
   if (name) {

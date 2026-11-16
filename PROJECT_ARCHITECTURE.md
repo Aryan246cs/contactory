@@ -2,7 +2,7 @@
 
 ## Product and runtime model
 
-Vemori is an offline-first Android and iOS contact memory app. It has no application server, API, login, cloud database, or runtime backend. Business logic and persistent contact data live on the device. Expo Application Services (EAS) is used to build and distribute native app binaries; it is not part of the app's runtime data path.
+Vemori is an offline-first Android and iOS contact memory app. Its core features have no login or cloud database; business logic and persistent contact data live on the device. An optional, user-triggered AI suggestion flow sends OCR text through a small server-side proxy to Groq. Expo Application Services (EAS) is used to build and distribute native app binaries; it is not part of the app's runtime data path.
 
 ```mermaid
 flowchart LR
@@ -10,7 +10,9 @@ flowchart LR
   Routes --> Components[Shared React Native components]
   Routes --> Services[Device and file services]
   Routes --> Repositories[SQLite repositories]
-  Services --> Native[Camera · OCR · Contacts · Share sheet]
+  Services --> Native[Camera · on-device OCR · Contacts · Share sheet]
+  Routes -. optional after confirmation .-> Groq[Cloudflare Worker → Groq GPT-OSS]
+  Groq -. structured suggestions .-> Routes
   Services --> Repositories
   Repositories --> SQLite[(contactory.db on device)]
 ```
@@ -59,7 +61,10 @@ sequenceDiagram
   Crop->>Crop: Map preview bounds to image pixels and crop
   Crop->>OCR: Cropped image URI
   OCR->>Parser: Recognized text
-  Parser->>Review: Suggested contact fields
+  Parser->>Review: Local field suggestions
+  User->>Review: Explicitly request AI suggestions
+  Review->>Groq: OCR text only
+  Groq->>Review: Evidence-backed structured suggestions
   User->>Review: Correct fields, select phones, add memory
   Review->>Repo: Save approved contact draft
   Repo->>DB: Transaction: contact, phones, note
@@ -67,9 +72,9 @@ sequenceDiagram
 
 The guide is measured in screen coordinates. `src/services/images/cropToGuide.ts` maps those bounds to the captured image using the camera preview's center-fill scaling, then crops the file with `expo-image-manipulator`. This is a fixed guide crop: the user still aligns the card inside the guide; the app does not perform automatic card-edge detection or perspective correction.
 
-The cropped image is passed to `src/services/ocr/recognizeText.ts`, which wraps `expo-ocr-kit` (on-device Apple Vision on iOS and ML Kit on Android). `src/services/ocr/contactParser.ts` deterministically extracts likely fields. The user reviews the suggestions before anything is saved. Raw OCR text and camera files are not retained after the review flow. Gallery images remain in the user's photo library; Vemori does not delete them.
+The cropped image is passed to `src/services/ocr/recognizeText.ts`, which wraps `expo-ocr-kit` (on-device Apple Vision on iOS and ML Kit on Android). `src/services/ocr/contactParser.ts` deterministically extracts local field suggestions. In a configured build, the user may explicitly ask for Groq GPT-OSS suggestions from the review screen; only the recognized text is sent via `server/groq-proxy`, never the card image. The proxy validates that suggested values are supported by quoted OCR evidence. The app keeps the local parser result if the service is unavailable, and the user reviews all fields before saving. Raw OCR text and camera files are not retained by Vemori after the review flow. Gallery images remain in the user's photo library; Vemori does not delete them.
 
-OCR requires a Vemori development or release build containing the native module. Expo Go does not include `expo-ocr-kit`; camera cropping uses Expo's image manipulation API and can run in an Expo Go-compatible client, but this project's complete scan flow is intended for a development build.
+OCR requires a Vemori development or release build containing the native module. Expo Go does not include `expo-ocr-kit`; camera cropping uses Expo's image manipulation API and can run in an Expo Go-compatible client, but this project's complete scan flow is intended for a development build. AI suggestions also require the optional Worker deployment and public Worker URL configured in the client; the Groq key exists only as a server secret.
 
 ## Local data layer and relationships
 

@@ -12,6 +12,8 @@ flowchart TD
   Camera --> OCR[On-device OCR]
   OCR --> Parser[Deterministic field parser]
   Parser --> Review[User review and corrections]
+  Review -. optional; after consent .-> Groq[Groq GPT-OSS text suggestions]
+  Groq -. suggestions only .-> Review
   Review --> SQLite[(Local SQLite)]
   SQLite --> Memory[Contact and meeting memory]
   SQLite --> Search[Local search]
@@ -36,6 +38,7 @@ flowchart TD
 - Camera capture and gallery image selection with contextual camera permission.
 - On-device OCR using Google ML Kit on Android and Apple Vision on iOS.
 - Deterministic parsing for names, companies, titles, phone numbers, email, website, and address.
+- Optional, user-triggered Groq GPT-OSS suggestions for name, company, and title; the local parser remains the fallback.
 - Editable review, independent phone selection, personal note, meeting date, and location.
 - Local SQLite storage, contact editing/deletion, detail view, call/message/email/website actions.
 - Search by contact fields and memory text.
@@ -45,7 +48,7 @@ flowchart TD
 - Duplicate review using matching email/phone values; merge keeps all notes, unique numbers, tags, and fills missing details into the selected record.
 - Google Play deployment walkthrough in `docs/PLAY_STORE_DEPLOYMENT.md`.
 
-Card images and raw OCR text are temporary and are not retained after review. There is no card-image history. Contacts, notes, and tags are stored in local SQLite on the device; there is no app server or cloud storage. If users choose “Also save to phone Contacts,” the selected details and memory note are copied to the device Contacts app and may sync through that account.
+Card images and raw OCR text are temporary and are not retained after review. There is no card-image history. Contacts, notes, and tags are stored in local SQLite on the device. AI suggestions are optional: only after a per-scan confirmation, Vemori sends recognized text (not the image) through the configured Vemori Worker to Groq GPT-OSS. The app does not save this request on its own server; Groq's current data controls and retention terms apply. If users choose “Also save to phone Contacts,” the selected details and memory note are copied to the device Contacts app and may sync through that account. See the [Google Play deployment guide](docs/PLAY_STORE_DEPLOYMENT.md) to configure the proxy safely.
 
 ## Tech stack and structure
 
@@ -123,7 +126,7 @@ npx eas-cli build --profile preview --platform android
 
 ## Local data and privacy
 
-SQLite is the local source of truth. Contacts, phones, notes, native contact IDs, and minimal app metadata are stored on device. Foreign keys cascade when local contacts are deleted. No cloud service, login, analytics, advertising, or automatic upload is configured. SQLite encryption is not enabled or claimed.
+SQLite is the local source of truth. Contacts, phones, notes, native contact IDs, and minimal app metadata are stored on device. Foreign keys cascade when local contacts are deleted. No login, analytics, advertising, or automatic contact upload is configured. Optional AI suggestions require an explicit confirmation for each scan and send only OCR text to the configured Groq proxy. SQLite encryption is not enabled or claimed.
 
 Before release, publish a privacy policy that matches the final build and complete Play Console's disclosures. Follow [the Google Play deployment guide](docs/PLAY_STORE_DEPLOYMENT.md) for the publishing steps.
 

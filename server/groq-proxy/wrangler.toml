@@ -1,0 +1,12 @@
+name = "vemori-card-suggestions"
+main = "src/index.ts"
+compatibility_date = "2026-11-16"
+
+# Basic abuse control for this prototype. Configure a Groq spending limit too.
+[[ratelimits]]
+name = "AI_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 12, period = 60 }
+
+[vars]
+GROQ_MODEL = "openai/gpt-oss-20b"
