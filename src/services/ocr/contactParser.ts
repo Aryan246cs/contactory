@@ -5,8 +5,10 @@ const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const URL_RE = /(?:https?:\/\/)?(?:www\.)?[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9-]+)*\.(?:com|org|net|io|co|in|ai|app|biz|info|edu|gov|me|tech|design|studio)(?:\/[\w./?%&=+#-]*)?/gi;
 const PHONE_RE = /(?<!\w)\+?\d[\d\s()./-]{5,}\d(?!\w)/g;
 const LABEL_RE = /\b(mobile|mob|cell|phone|tel|telephone|office|work|direct|fax|home|main)\b/i;
-const TITLE_RE = /\b(ceo|cto|cfo|coo|founder|co-founder|director|manager|president|vice president|vp|engineer|designer|consultant|developer|lead|head(?:\s+of)?|product|sales|marketing|finance|officer|partner|professor|owner|architect|analyst|specialist|executive|accountant|controller|human resources|hr|operations|technical|scientist|attorney|lawyer|doctor|nurse|realtor|broker|intern|advisor|associate|administrator|coordinator|representative)\b/i;
-const COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|studio|labs|group|company|co\.|systems|partners|ventures|digital|services)\b/i;
+const TITLE_RE = /\b(ceo|cto|cfo|coo|chief|founder|co-founder|director|manager|president|vice president|vp|engineer|designer|consultant|developer|lead|head(?:\s+of)?|product|sales|marketing|finance|officer|partner|professor|owner|architect|analyst|specialist|executive|accountant|controller|human resources|hr|operations|technical|scientist|attorney|lawyer|doctor|nurse|realtor|broker|intern|advisor|associate|administrator|coordinator|representative|catalyst)\b/i;
+const COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|studio|labs|group|company|co\.|systems|partners|ventures|digital|services|properties|products|university|institute|college|school|hospital|foundation|association)\b/i;
+const STRONG_COMPANY_RE = /\b(inc\.?|llc|ltd\.?|limited|corp\.?|corporation|technologies|technology|solutions|properties|products|university|institute|college|school|hospital|foundation|association)\b/i;
+const NON_PERSON_RE = /\b(buy|sell|lease|rent|sale|purchase|deals?|industrial|construction|residential|commercial|properties|property|types|available|welcome|contact|head\s+office)\b/i;
 const GENERIC_EMAIL_HOSTS = new Set(['gmail', 'googlemail', 'yahoo', 'outlook', 'hotmail', 'live', 'icloud', 'me', 'aol', 'protonmail', 'proton', 'rediffmail']);
 
 export function normalizePhoneNumber(value: string): string {
@@ -61,6 +63,23 @@ function cleanLine(line: string): string {
     .replace(/[|•·]/g, ' ').replace(/\s+/g, ' ').replace(/^[\s,;:|.-]+|[\s,;:|.-]+$/g, '').trim();
 }
 
+// Business cards commonly append academic/professional credentials to the
+// person's name. Remove only known suffixes so punctuation such as initials
+// ("J.") remains available to the name candidate matcher.
+function cleanPersonCandidate(value: string): string {
+  let cleaned = value
+    .replace(/^\s*(?:(?:full\s+)?name)\s*[:|-]\s*/i, '')
+    .replace(/^\s*(?:(?:mr|mrs|ms|miss|dr|prof|professor|er)\.?\s+)+/i, '')
+    .trim();
+  const credential = /(?:,\s*|\s+)(?:ph\.?\s*d\.?|m\.?\s*e\.?|b\.?\s*e\.?|m\.?\s*tech\.?|b\.?\s*tech\.?|m\.?\s*b\.?\s*a\.?|mba|p\.?\s*m\.?\s*p\.?|cfa|cpa|m\.?\s*d\.?|p\.?\s*e\.?|ll\.?\s*b\.?|m\.?\s*sc\.?)\s*$/i;
+  let previous = '';
+  while (cleaned !== previous) {
+    previous = cleaned;
+    cleaned = cleaned.replace(credential, '').replace(/[\s,;|]+$/g, '').trim();
+  }
+  return cleaned.replace(/[|•·]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 type ParserBlock = { text: string; boundingBox?: { x: number; y: number; width: number; height: number } };
 
 function fieldLabel(raw: string, field: 'name' | 'company' | 'title' | 'address'): boolean {
@@ -95,10 +114,10 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
   const titleIndex = cleaned.findIndex(({ value }) => TITLE_RE.test(value));
   const title = titleIndex >= 0 ? cleaned[titleIndex] : undefined;
   if (title) parsed.jobTitle = title.value;
-  const candidates = cleaned.map((line, index) => ({ ...line, index })).filter(({ raw, value }) => {
-    if (TITLE_RE.test(value) || COMPANY_RE.test(value)) return false;
-    if (/\d|@|https?:/i.test(raw) || value.length > 42) return false;
-    const words = value.split(/\s+/);
+  const candidates = cleaned.map((line, index) => ({ ...line, index, nameText: cleanPersonCandidate(line.value) })).filter(({ raw, value, nameText }) => {
+    if (!nameText || TITLE_RE.test(value) || COMPANY_RE.test(value) || NON_PERSON_RE.test(value)) return false;
+    if (/\d|@|https?:/i.test(raw) || nameText.length > 42) return false;
+    const words = nameText.split(/\s+/);
     return words.length >= 2 && words.length <= 4 && words.every((word) => /^[\p{L}'’-]+\.?$/u.test(word));
   });
   // Names are usually in mixed/title case and close to the role line. Large logo
@@ -108,9 +127,9 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
       const uppercase = candidate.raw === candidate.raw.toUpperCase() && /[A-Z]/.test(candidate.raw);
       const titleDistance = titleIndex < 0 ? 0 : Math.abs(candidate.index - titleIndex);
       const labeledName = fieldLabel(candidate.raw, 'name');
-      const tokens = candidate.value.toLowerCase().split(/[^\p{L}]+/u).filter((token) => token.length > 1);
+      const tokens = candidate.nameText.toLowerCase().split(/[^\p{L}]+/u).filter((token) => token.length > 1);
       const emailSupportsName = tokens.some((token) => token.length >= 3 && emailLocal.includes(token));
-      const domainSupportsCompany = emailHost.length >= 3 && candidate.value.toLowerCase().includes(emailHost);
+      const domainSupportsCompany = emailHost.length >= 3 && candidate.nameText.toLowerCase().includes(emailHost);
       let spatialPenalty = 0;
       if (candidate.box && title?.box) {
         const cardWidth = Math.max(...blocks.map((block) => (block.boundingBox?.x ?? 0) + (block.boundingBox?.width ?? 0)), 1);
@@ -119,12 +138,16 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
         const dy = (candidate.box.y + candidate.box.height / 2 - title.box.y - title.box.height / 2) / cardHeight;
         spatialPenalty = Math.min(4, Math.hypot(dx, dy) * 5);
       }
-      return { ...candidate, score: (labeledName ? 12 : uppercase ? (titleDistance <= 1 || emailSupportsName ? 3 : -5) : 3) - titleDistance * 1.5 - spatialPenalty + (emailSupportsName ? 4 : 0) - (domainSupportsCompany ? 8 : 0) + (candidate.value.split(/\s+/).length === 2 ? 1 : 0) };
+      return { ...candidate, value: candidate.nameText, score: (labeledName ? 12 : uppercase ? (titleDistance <= 1 || emailSupportsName ? 3 : -5) : 3) - titleDistance * 1.5 - spatialPenalty + (emailSupportsName ? 4 : 0) - (domainSupportsCompany ? 8 : 0) + (candidate.nameText.split(/\s+/).length === 2 ? 1 : 0) };
     })
     .sort((a, b) => b.score - a.score)[0];
   const name = nameCandidate && nameCandidate.score > 0 ? nameCandidate : undefined;
   const labeledCompanyIndex = cleaned.findIndex(({ raw }) => fieldLabel(raw, 'company'));
-  const companyIndex = cleaned.findIndex(({ value }) => COMPANY_RE.test(value));
+  // Prefer an explicit legal/organization name over secondary logo copy such
+  // as "A GROZ GROUP COMPANY" when both appear on the same card.
+  const companyIndex = cleaned.findIndex(({ value }) => STRONG_COMPANY_RE.test(value)) >= 0
+    ? cleaned.findIndex(({ value }) => STRONG_COMPANY_RE.test(value))
+    : cleaned.findIndex(({ value }) => COMPANY_RE.test(value));
   let company = labeledCompanyIndex >= 0 ? cleaned[labeledCompanyIndex].value : companyIndex >= 0 ? cleaned[companyIndex].value : '';
   if (!company) {
     company = cleaned.find(({ raw, value }) => value !== name?.value && raw === raw.toUpperCase() && /[A-Z]/.test(raw) && value.length > 2)?.value ?? '';
@@ -150,6 +173,9 @@ export function extractContactFields(text: string, blocks: ParserBlock[] = []): 
   if (company) parsed.company = company;
   if (name) {
     parsed.fullName = name.value;
+    // Some cards list more than one person. Keep the alternatives in the
+    // review-only draft so the user can select the intended contact.
+    parsed.nameCandidates = deduplicateValues(candidates.map((candidate) => candidate.nameText));
     const words = parsed.fullName.split(/\s+/);
     parsed.firstName = words[0] ?? '';
     parsed.lastName = words.slice(1).join(' ');

@@ -6,6 +6,8 @@ export type ParsedPhone = {
 
 export type ParsedContact = {
   fullName: string;
+  /** Alternative person-name candidates shown during scan review; not persisted. */
+  nameCandidates?: string[];
   firstName: string;
   lastName: string;
   company: string;
