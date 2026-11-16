@@ -43,7 +43,7 @@ flowchart TD
 - CSV export via the operating system share sheet; local-only delete confirmation.
 - Optional suggested and custom tags, with tappable groups from the home screen.
 - Duplicate review using matching email/phone values; merge keeps all notes, unique numbers, tags, and fills missing details into the selected record.
-- Draft privacy policy, store checklist, and device test checklist.
+- Google Play deployment walkthrough in `docs/PLAY_STORE_DEPLOYMENT.md`.
 
 Card images and raw OCR text are temporary and are not retained after review. There is no card-image history. Contacts, notes, and tags are stored in local SQLite on the device; there is no app server or cloud storage. If users choose “Also save to phone Contacts,” the selected details and memory note are copied to the device Contacts app and may sync through that account.
 
@@ -65,7 +65,7 @@ src/services/contacts/        Native Contacts adapter
 src/services/export/          CSV export and share
 src/theme/                    Design tokens
 src/types/                    Contact and OCR models
-docs/                         Implementation, device, and store guidance
+docs/                         Google Play deployment guide
 ```
 
 ## Install dependencies
@@ -115,13 +115,17 @@ After installing the development build, start Metro with `npm run start:dev` and
 
 ## Share a private test build
 
-To share an installable Android APK with a few testers, follow [the private testing guide](docs/PRIVATE_TESTING.md). The EAS preview build runs on its own and does not need a development server.
+To share an installable Android APK with a few testers, use the EAS `preview` profile. It runs on its own and does not need a development server:
+
+```sh
+npx eas-cli build --profile preview --platform android
+```
 
 ## Local data and privacy
 
 SQLite is the local source of truth. Contacts, phones, notes, native contact IDs, and minimal app metadata are stored on device. Foreign keys cascade when local contacts are deleted. No cloud service, login, analytics, advertising, or automatic upload is configured. SQLite encryption is not enabled or claimed.
 
-The privacy policy in `docs/PRIVACY_POLICY_DRAFT.md` should be reviewed against the final build and completed with publisher and jurisdiction details before release. For first-time store publishing steps, see [the deployment and publishing guide](docs/DEPLOYMENT_AND_PUBLISHING.md).
+Before release, publish a privacy policy that matches the final build and complete Play Console's disclosures. Follow [the Google Play deployment guide](docs/PLAY_STORE_DEPLOYMENT.md) for the publishing steps.
 
 ## Validation and release
 
@@ -131,4 +135,4 @@ npx expo-doctor
 npm run start
 ```
 
-Use [the real-device checklist](docs/REAL_DEVICE_TESTING.md) for camera/OCR/permission/restart checks and [the store checklist](docs/STORE_RELEASE_CHECKLIST.md) for publishing. Android package and iOS bundle identifiers in `app.json` are placeholders (`com.example.vemori`) and must be replaced before store builds. Store approval, credentials, and physical-device validation are not claimed.
+Use the device validation steps in [the Google Play deployment guide](docs/PLAY_STORE_DEPLOYMENT.md) for camera/OCR/permission/restart checks. The Android package and iOS bundle identifiers in `app.json` are currently `com.tiger.vemori`; confirm they are controlled by the publisher and finalize them before the first store upload. Store approval, credentials, and physical-device validation are not claimed.

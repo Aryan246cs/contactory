@@ -1548,9 +1548,7 @@ Do not pretend native device functionality has been physically tested if it hasn
 
 # 44. REAL DEVICE TESTING CHECKLIST
 
-Prepare a document:
-
-`docs/REAL_DEVICE_TESTING.md`
+Include practical Android device validation steps in the single Play Store deployment guide. Do not create a separate device-testing Markdown document.
 
 Include:
 
@@ -1707,9 +1705,7 @@ Clearly identify those placeholders.
 
 # 50. STORE READINESS
 
-Prepare:
-
-`docs/STORE_RELEASE_CHECKLIST.md`
+Include Google Play store readiness steps in `docs/PLAY_STORE_DEPLOYMENT.md`. Do not create a separate checklist or App Store publishing guide.
 
 Include:
 
@@ -1727,37 +1723,13 @@ Include:
 - Testing track.
 - Production release.
 
-## App Store
-
-- Apple Developer account.
-- Bundle ID.
-- App Store Connect.
-- App icon.
-- Screenshots.
-- Description.
-- Keywords.
-- Privacy details.
-- Permission descriptions.
-- TestFlight.
-- App Review.
-
 Do not claim approval.
 
 ---
 
-# 51. PRIVACY POLICY DRAFT
+# 51. PRIVACY POLICY
 
-Create:
-
-`docs/PRIVACY_POLICY_DRAFT.md`
-
-It must describe the actual MVP implementation.
-
-Do not invent:
-- Analytics.
-- Cloud storage.
-- Advertising.
-- Third-party sharing.
+Explain in the Play Store deployment guide that the publisher must host a completed privacy policy matching the actual release. Do not create a privacy-policy draft document in `docs/`.
 
 If the MVP does not send contact information to a server, say so accurately.
 
