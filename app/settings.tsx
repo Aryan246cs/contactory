@@ -45,7 +45,7 @@ export default function SettingsScreen() {
       <Pressable accessibilityRole="button" onPress={exportData} disabled={exporting} style={styles.row}><View><Text style={styles.itemTitle}>{exporting ? 'Preparing export…' : 'Export contacts as CSV'}</Text><Text style={styles.itemSub}>Create a file and choose where to share or save it.</Text></View><Text style={styles.chevron}>↗</Text></Pressable>
       <Pressable accessibilityRole="button" onPress={deleteData} style={[styles.row, styles.deleteRow]}><View><Text style={styles.deleteTitle}>Delete all local data</Text><Text style={styles.itemSub}>Your phone Contacts are left untouched.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <Text style={styles.section}>PRIVACY & ABOUT</Text>
-      <Pressable onPress={() => router.push('/privacy')} style={styles.row}><View><Text style={styles.itemTitle}>Privacy policy</Text><Text style={styles.itemSub}>A draft describing this local-first version.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
+      <Pressable onPress={() => router.push('/privacy')} style={styles.row}><View><Text style={styles.itemTitle}>Privacy policy</Text><Text style={styles.itemSub}>How Vemori stores and shares your data.</Text></View><Text style={styles.chevron}>›</Text></Pressable>
       <View style={styles.about}><Text style={styles.version}>Vemori · Version 1.0.0</Text><Text style={styles.aboutSub}>Your network, held close.</Text></View>
     </ScrollView>
   </SafeAreaView>;

@@ -1,3 +1,5 @@
+import { privacyPolicyEffectiveDate, privacyPolicySections } from '../../../src/data/privacyPolicy';
+
 interface RateLimiter {
   limit(options: { key: string }): Promise<{ success: boolean }>;
 }
@@ -93,8 +95,62 @@ function validateModelResult(raw: unknown, sourceText: string): ModelResult {
   };
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character] ?? character);
+}
+
+function privacyPolicyResponse(): Response {
+  const sections = privacyPolicySections.map(({ title, body }) =>
+    `<section><h2>${escapeHtml(title)}</h2><p>${escapeHtml(body)}</p></section>`).join('\n');
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Vemori Privacy Policy</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.65 system-ui, sans-serif; color: #242238; background: #f7f6fb; }
+    body { margin: 0; padding: 32px 18px; }
+    main { max-width: 760px; margin: 0 auto; padding: 32px; background: white; border: 1px solid #e5e2ee; border-radius: 16px; }
+    h1 { margin: 0; font-size: 2rem; line-height: 1.2; }
+    .date { color: #6953a5; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .intro { color: #625e70; }
+    section { margin-top: 26px; }
+    h2 { margin: 0 0 6px; font-size: 1.1rem; }
+    p { margin: 0; color: #514d5e; }
+    @media (max-width: 560px) { body { padding: 12px; } main { padding: 22px 18px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Vemori Privacy Policy</h1>
+    <p class="date">Effective ${escapeHtml(privacyPolicyEffectiveDate)}</p>
+    <p class="intro">This policy explains what Vemori stores on your device and what is shared when you choose optional features.</p>
+    ${sections}
+  </main>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'no-store',
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      'referrer-policy': 'no-referrer',
+      'x-content-type-options': 'nosniff',
+    },
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const pathname = new URL(request.url).pathname;
+    if (request.method === 'GET' && (pathname === '/privacy-policy' || pathname === '/privacy-policy/')) {
+      return privacyPolicyResponse();
+    }
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
     if (!env.GROQ_API_KEY) return json({ error: 'AI service is not configured' }, 503);
     const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';

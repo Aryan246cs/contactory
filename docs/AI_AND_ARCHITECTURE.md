@@ -113,17 +113,22 @@ secret embedded in the mobile client would not provide secure caller authenticat
 ## Data and privacy
 
 - Contacts, notes, tags, and preferences are stored locally in SQLite. There is no login or
-  cloud contact database.
+  Vemori-operated cloud contact database. The device operating system's backup settings may
+  include app data.
 - Camera/gallery OCR runs on-device. The image and raw OCR text are temporary scan inputs in
   the app.
 - If the user confirms AI suggestions, the recognized text (which can include personal contact
-  information) is sent to the Cloudflare Worker and Groq. The image is not sent.
-- The app does not persist the AI request. Groq's data controls and applicable retention terms
-  still apply; review them before a public release.
+  information) is sent to the Cloudflare Worker and Groq. The Worker also processes the
+  network address for rate limiting. The image is not sent.
+- Vemori does not save AI requests in the contact database. Cloudflare processes request and
+  operational information to run the Worker. Groq says inference content is not retained by
+  default, but may be logged for reliability/abuse handling for up to 30 days unless ZDR is
+  enabled.
 - User-triggered export and saving to phone Contacts are separate flows and follow the
   operating system's sharing/Contacts behavior.
-- Before enabling AI in a Play release, make the privacy policy, Google Play Data safety
-  answers, and user disclosure match the actual data flow.
+- The [public privacy policy](https://vemori-card-suggestions.vemori-card-suggestions.workers.dev/privacy-policy)
+  describes the current flow. Complete Play's Data safety answers, set a real support email
+  in the store listing, and keep both policies in sync if the data flow changes.
 
 ## Key source files
 

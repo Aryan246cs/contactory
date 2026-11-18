@@ -159,9 +159,10 @@ to the configured Groq proxy. The current Worker is a public endpoint with basic
 limiting; production rollout needs additional abuse controls and matching privacy/Data
 safety disclosures. SQLite encryption is not enabled or claimed.
 
-Before release, publish a privacy policy that matches the final build and complete Play
-Console's disclosures. Follow [the Google Play deployment
-guide](docs/PLAY_STORE_DEPLOYMENT.md) for the publishing steps.
+The matching [public privacy policy](https://vemori-card-suggestions.vemori-card-suggestions.workers.dev/privacy-policy)
+is live. Complete the Play Data safety and App content disclosures from the final build, and
+set the Play listing's support email used by the policy. Follow [the Google Play deployment
+guide](docs/PLAY_STORE_DEPLOYMENT.md) for the remaining steps.
 
 ## Validation and release
 
