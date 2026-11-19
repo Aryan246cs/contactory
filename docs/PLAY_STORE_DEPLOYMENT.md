@@ -125,12 +125,13 @@ AI suggestions in the store listing. The local OCR/parser flow will remain avail
 
 ### 3. Confirm permissions in the release build
 
-The scan flow captures still photos and does not record audio. The repository config now
-removes `android.permission.RECORD_AUDIO` and disables microphone access in both the camera
-and image-picker plugins. The effective Android config was checked and no longer includes
-that permission. Camera and read/write Contacts permissions remain for scanning and the
-optional save-to-phone-Contacts flow. After building, inspect the AAB/Play Console permission
-summary and confirm it matches those features.
+The scan flow captures still photos and does not record audio. The repository config blocks
+`RECORD_AUDIO` and `SYSTEM_ALERT_WINDOW`; microphone access is also disabled in both the
+camera and image-picker plugins. Camera and read/write Contacts permissions remain for
+scanning and the optional save-to-phone-Contacts flow. Expo's file/photo packages add
+external-storage permissions capped at Android API 32, along with Internet access; haptics
+uses vibration. After building, inspect the AAB/Play Console permission summary and confirm
+it matches these features.
 
 ### 4. Prepare the Play listing and release details
 
